@@ -24,7 +24,8 @@ class HobbyForm(forms.ModelForm):
 
     def clean_title(self):
         title = self.cleaned_data['title']
-        if Hobby.objects.filter(title=title).exists():
+        # Only check for duplicates if creating a new hobby (no instance or instance.pk is None)
+        if not self.instance.pk and Hobby.objects.filter(title=title).exists():
             raise ValidationError("A hobby/event with this name already exists. Please choose a different name.")
         return title
 
