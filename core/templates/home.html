@@ -37,7 +37,11 @@
                 <a href="{% url 'hobby_detail' hobby.id %}" class="btn btn-outline-primary">View Details</a>
             </div>
             <div class="card-footer text-muted">
-                Hosted by: {{ hobby.host.username }} ({{ hobby.host_hobby_count }} hobbies)
+                Hosted by: 
+                <a href="{% url 'host_summary' hobby.host.username %}">
+                    {{ hobby.host.username }}
+                </a>
+                ({{ hobby.host_hobby_count }} hobbies)
             </div>
         </div>
     </div>

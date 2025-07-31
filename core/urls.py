@@ -17,4 +17,6 @@ urlpatterns = [
     path('profile/', views.user_profile, name='profile'),
     path('user/<int:user_id>/', views.owner_profile, name='owner_profile'),
     path('hobby/<int:hobby_id>/withdraw/', views.withdraw_application, name='withdraw_application'),
+    path('profile/<str:username>/', views.profile, name='profile'),
+    path('host/<str:username>/summary/', views.host_summary, name='host_summary'),
 ]

@@ -187,3 +187,22 @@ def withdraw_application(request, hobby_id):
     if application:
         application.delete()
     return redirect('hobby_detail', hobby_id=hobby.id)
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.models import User
+
+def profile(request, username):
+    user = get_object_or_404(User, username=username)
+    # Add any extra context you need, e.g. hobbies, reviews, etc.
+    return render(request, 'profile.html', {'profile_user': user})
+
+def host_summary(request, username):
+    user = get_object_or_404(User, username=username)
+    from .models import Hobby  # Import your Hobby model
+    hobbies = Hobby.objects.filter(host=user)
+    reviews = user.review_set.all() if hasattr(user, 'review_set') else []
+    return render(request, 'host_summary.html', {
+        'host': user,
+        'hobbies': hobbies,
+        'reviews': reviews,
+    })

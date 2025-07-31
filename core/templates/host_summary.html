@@ -1,0 +1,26 @@
+<!-- filepath: /Users/pghaderi/Documents/hobbyshare/hobby_share_v2/core/templates/host_summary.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>{{ host.username }}'s Activity Summary</h2>
+
+<h4>Hobbies Posted:</h4>
+<ul>
+    {% for hobby in hobbies %}
+        <li>
+            <a href="{% url 'hobby_detail' hobby.id %}">{{ hobby.title }}</a>
+        </li>
+    {% empty %}
+        <li>No hobbies posted yet.</li>
+    {% endfor %}
+</ul>
+
+<h4>Reviews:</h4>
+<ul>
+    {% for review in reviews %}
+        <li>{{ review.content }} ({{ review.rating }}/5)</li>
+    {% empty %}
+        <li>No reviews yet.</li>
+    {% endfor %}
+</ul>
+{% endblock %}
