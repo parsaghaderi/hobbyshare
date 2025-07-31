@@ -87,9 +87,64 @@
 <p><strong>Place:</strong> {{ hobby.place }}</p>
 <p><strong>Description:</strong> {{ hobby.description }}</p>
 <p>
-    Hosted by: 
+    Hosted by:
     <a href="{% url 'owner_profile' hobby.host.id %}">
         {{ hobby.host.username }}
     </a>
 </p>
+
+<h4>Requirements</h4>
+<ul>
+    {% for req in hobby.requirements.all %}
+        <li>
+            <input type="checkbox" name="requirement_{{ req.id }}" id="requirement_{{ req.id }}">
+            <label for="requirement_{{ req.id }}">{{ req.name }}</label>
+        </li>
+    {% empty %}
+        <li>No requirements listed.</li>
+    {% endfor %}
+</ul>
+
+{% if is_host %}
+    <h5>Who meets each requirement?</h5>
+    {% for req, users in met_by_users.items %}
+        <strong>{{ req }}:</strong>
+        <ul>
+            {% for ur in users %}
+                <li>{{ ur.user.username }}</li>
+            {% empty %}
+                <li>No one yet.</li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+
+    <h5>Applicants and their requirements:</h5>
+    <ul>
+        {% for username, reqs in user_requirements.items %}
+            <li>
+                <strong>{{ username }}:</strong>
+                {% if reqs %}
+                    {{ reqs|join:", " }}
+                {% else %}
+                    <em>No requirements checked</em>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% if not is_host %}
+<form method="post">
+    {% csrf_token %}
+    <h5>Which requirements do you meet?</h5>
+    {% for req in hobby.requirements.all %}
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="met_requirements" value="{{ req.id }}" id="req_{{ req.id }}"
+                {% if req.id in user_met_requirements %}checked{% endif %}>
+            <label class="form-check-label" for="req_{{ req.id }}">{{ req.name }}</label>
+        </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary mt-2">Save My Requirements</button>
+</form>
+{% endif %}
 {% endblock %}

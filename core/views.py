@@ -3,7 +3,7 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Hobby, Category, Application, Profile, Rating, ParticipantRating
+from .models import Hobby, Category, Application, Profile, Rating, ParticipantRating, Tag, Requirement, UserRequirement
 from .forms import HobbyForm, ProfileForm
 from django.db.models import Count
 from django.utils import timezone
@@ -25,19 +25,31 @@ def home(request):
 def hobby_detail(request, hobby_id):
     hobby = get_object_or_404(Hobby, id=hobby_id)
     is_host = request.user == hobby.host
-    user_application = None
-    if request.user.is_authenticated:
-        user_application = Application.objects.filter(hobby=hobby, applicant=request.user).first()
 
-    contact_info = None
-    if user_application and user_application.status == 'accepted':
-        contact_info = hobby.host.email # Or other contact info
+    user_met_requirements = UserRequirement.objects.filter(
+        user=request.user, hobby=hobby
+    ).values_list('requirement_id', flat=True)
+
+    if request.method == 'POST' and not is_host:
+        selected = request.POST.getlist('met_requirements')
+        UserRequirement.objects.filter(user=request.user, hobby=hobby).delete()
+        for req_id in selected:
+            UserRequirement.objects.create(user=request.user, hobby=hobby, requirement_id=req_id)
+        user_met_requirements = selected
+
+    # For host: show which requirements each user meets
+    user_requirements = {}
+    if is_host:
+        applications = hobby.applications.all()
+        for app in applications:
+            reqs = UserRequirement.objects.filter(user=app.applicant, hobby=hobby).values_list('requirement__name', flat=True)
+            user_requirements[app.applicant.username] = list(reqs)
 
     context = {
         'hobby': hobby,
         'is_host': is_host,
-        'user_application': user_application,
-        'contact_info': contact_info
+        'user_met_requirements': user_met_requirements,
+        'user_requirements': user_requirements,
     }
     return render(request, 'hobby_detail.html', context)
 
@@ -48,8 +60,24 @@ def create_hobby(request):
         if form.is_valid():
             hobby = form.save(commit=False)
             hobby.host = request.user
+
+            # Handle new category, tags, requirements
+            new_category = form.cleaned_data.get('new_category')
+            if new_category:
+                category_obj, created = Category.objects.get_or_create(name=new_category)
+                hobby.category = category_obj
+
             hobby.save()
-            form.save_m2m() # Important for ManyToMany fields
+            form.save_m2m()
+
+            # Handle new requirements
+            new_requirements = form.cleaned_data.get('new_requirements')
+            if new_requirements:
+                req_names = [r.strip() for r in new_requirements.split(',') if r.strip()]
+                for req_name in req_names:
+                    req_obj, created = Requirement.objects.get_or_create(name=req_name)
+                    hobby.requirements.add(req_obj)
+
             return redirect('hobby_detail', hobby_id=hobby.id)
     else:
         form = HobbyForm()

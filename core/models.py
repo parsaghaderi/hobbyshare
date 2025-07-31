@@ -27,6 +27,12 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
 
+class Requirement(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
 class Hobby(models.Model):
     host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='hosted_hobbies')
     title = models.CharField(max_length=200)
@@ -34,6 +40,7 @@ class Hobby(models.Model):
     image = models.ImageField(upload_to='hobby_images/', blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
     tags = models.ManyToManyField(Tag, blank=True)
+    requirements = models.ManyToManyField(Requirement, blank=True)
     max_participants = models.PositiveIntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     date = models.DateTimeField(null=True, blank=True)  # <-- Add this line
@@ -76,3 +83,8 @@ class ParticipantRating(models.Model):
 
     class Meta:
         unique_together = ('hobby', 'participant')
+
+class UserRequirement(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    hobby = models.ForeignKey(Hobby, on_delete=models.CASCADE)
+    requirement = models.ForeignKey(Requirement, on_delete=models.CASCADE)

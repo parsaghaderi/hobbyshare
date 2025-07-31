@@ -40,7 +40,7 @@
                         {{ form.tags }}
                     </div>
                 </div>
-                 <div class="mb-3">
+                <div class="mb-3">
                     <label for="{{ form.new_tags.id_for_label }}" class="form-label">{{ form.new_tags.label }}</label>
                     {{ form.new_tags }}
                 </div>
@@ -52,12 +52,55 @@
                     <label for="id_place" class="form-label">Place</label>
                     {{ form.place }}
                 </div>
+                <div class="mb-3">
+                    <label class="form-label d-block">{{ form.requirements.label }}</label>
+                    <div class="border rounded p-2" style="max-height: 150px; overflow-y: auto;">
+                        {{ form.requirements }}
+                    </div>
+                    <small class="form-text text-muted">Check the requirements that apply to this hobby.</small>
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.new_requirements.id_for_label }}" class="form-label">{{ form.new_requirements.label }}</label>
+                    {{ form.new_requirements }}
+                    <small class="form-text text-muted">Add new requirements (comma separated).</small>
+                </div>
                 
                 <button type="submit" class="btn btn-primary">Post Hobby</button>
             </form>
         </div>
     </div>
 </div>
+
+{% if user == hobby.host %}
+    <!-- Host can add new requirements -->
+    <div class="mb-3">
+        <label class="form-label d-block">Requirements</label>
+        <div id="existing-requirements" class="border rounded p-2" style="max-height: 150px; overflow-y: auto;">
+            {{ form.requirements }}
+        </div>
+        <small class="form-text text-muted">Check the requirements that apply to this hobby.</small>
+    </div>
+    <div class="mb-3">
+        <label for="id_new_requirements" class="form-label">Add New Requirements (comma separated)</label>
+        <input type="text" id="id_new_requirements" name="new_requirements" class="form-control">
+        <small class="form-text text-muted">Add new requirements (comma separated).</small>
+        <div id="new-requirements-list" class="mt-2"></div>
+    </div>
+{% else %}
+    <!-- Participants can check which requirements they meet -->
+    <form method="post">
+        {% csrf_token %}
+        <h5>Which requirements do you meet?</h5>
+        {% for req in hobby.requirements.all %}
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="met_requirements" value="{{ req.id }}" id="req_{{ req.id }}"
+                    {% if req.id in user_met_requirements %}checked{% endif %}>
+                <label class="form-check-label" for="req_{{ req.id }}">{{ req.name }}</label>
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary mt-2">Save My Requirements</button>
+    </form>
+{% endif %}
 
 <style>
     /* Improve form rendering */
@@ -78,4 +121,20 @@
     #id_tags { list-style-type: none; padding-left: 0; }
     #id_tags li { display: block; }
 </style>
+<script>
+document.getElementById('id_new_requirements').addEventListener('input', function() {
+    const container = document.getElementById('new-requirements-list');
+    container.innerHTML = '';
+    const values = this.value.split(',').map(v => v.trim()).filter(v => v);
+    values.forEach((val, idx) => {
+        const id = 'new_req_' + idx;
+        container.innerHTML += `
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" checked id="${id}" name="new_requirements_checkboxes" value="${val}">
+                <label class="form-check-label" for="${id}">${val}</label>
+            </div>
+        `;
+    });
+});
+</script>
 {% endblock %}
