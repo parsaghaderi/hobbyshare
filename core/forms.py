@@ -3,7 +3,6 @@ from .models import Hobby, Profile, Requirement
 
 class HobbyForm(forms.ModelForm):
     new_category = forms.CharField(required=False, label="Add New Category")
-    new_tags = forms.CharField(required=False, label="Add New Tags (comma separated)")
     new_requirements = forms.CharField(required=False, label="Add New Requirements (comma separated)")
     requirements = forms.ModelMultipleChoiceField(
         queryset=Requirement.objects.all(),
@@ -14,10 +13,7 @@ class HobbyForm(forms.ModelForm):
 
     class Meta:
         model = Hobby
-        fields = [
-            'title', 'description', 'image', 'category', 'tags',
-            'max_participants', 'date', 'place', 'requirements'
-        ]
+        exclude = ['host', 'category', 'tags']  # Exclude host, category, tags
         widgets = {
             'tags': forms.CheckboxSelectMultiple,
             'date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),

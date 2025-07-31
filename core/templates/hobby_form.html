@@ -20,25 +20,20 @@
                     <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
                     {{ form.image }}
                 </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="{{ form.category.id_for_label }}" class="form-label">{{ form.category.label }}</label>
-                        {{ form.category }}
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="{{ form.new_category.id_for_label }}" class="form-label">{{ form.new_category.label }}</label>
-                        {{ form.new_category }}
-                    </div>
+                <div class="mb-3">
+                    <label for="category-input" class="form-label">Category</label>
+                    <input type="text" id="category-input" name="category" class="form-control" autocomplete="off" placeholder="Type to search or add category...">
+                    <div id="category-suggestions" class="list-group mt-1"></div>
+                </div>
+                <div class="mb-3">
+                    <label for="tags-input" class="form-label">Tags</label>
+                    <input type="text" id="tags-input" name="tags" class="form-control" autocomplete="off" placeholder="Type to search or add tags...">
+                    <div id="tags-suggestions" class="list-group mt-1"></div>
+                    <div id="selected-tags" class="mt-2"></div>
                 </div>
                 <div class="mb-3">
                     <label for="{{ form.max_participants.id_for_label }}" class="form-label">{{ form.max_participants.label }}</label>
                     {{ form.max_participants }}
-                </div>
-                <div class="mb-3">
-                    <label class="form-label d-block">{{ form.tags.label }}</label>
-                    <div class="border rounded p-2" style="max-height: 150px; overflow-y: auto;">
-                        {{ form.tags }}
-                    </div>
                 </div>
                 <div class="mb-3">
                     <label for="{{ form.new_tags.id_for_label }}" class="form-label">{{ form.new_tags.label }}</label>
@@ -52,57 +47,13 @@
                     <label for="id_place" class="form-label">Place</label>
                     {{ form.place }}
                 </div>
-                <div class="mb-3">
-                    <label class="form-label d-block">{{ form.requirements.label }}</label>
-                    <div class="border rounded p-2" style="max-height: 150px; overflow-y: auto;">
-                        {{ form.requirements }}
-                    </div>
-                    <small class="form-text text-muted">Check the requirements that apply to this hobby.</small>
-                </div>
-                <div class="mb-3">
-                    <label for="{{ form.new_requirements.id_for_label }}" class="form-label">{{ form.new_requirements.label }}</label>
-                    {{ form.new_requirements }}
-                    <small class="form-text text-muted">Add new requirements (comma separated).</small>
-                </div>
                 <button type="submit" class="btn btn-primary">Post Hobby</button>
             </form>
         </div>
     </div>
 </div>
 
-{% if user == hobby.host %}
-    <!-- Host can add new requirements -->
-    <div class="mb-3">
-        <label class="form-label d-block">Requirements</label>
-        <div id="existing-requirements" class="border rounded p-2" style="max-height: 150px; overflow-y: auto;">
-            {{ form.requirements }}
-        </div>
-        <small class="form-text text-muted">Check the requirements that apply to this hobby.</small>
-    </div>
-    <div class="mb-3">
-        <label for="id_new_requirements" class="form-label">Add New Requirements (comma separated)</label>
-        <input type="text" id="id_new_requirements" name="new_requirements" class="form-control">
-        <small class="form-text text-muted">Add new requirements (comma separated).</small>
-        <div id="new-requirements-list" class="mt-2"></div>
-    </div>
-{% else %}
-    <!-- Participants can check which requirements they meet -->
-    <form method="post">
-        {% csrf_token %}
-        <h5>Which requirements do you meet?</h5>
-        {% for req in hobby.requirements.all %}
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="met_requirements" value="{{ req.id }}" id="req_{{ req.id }}"
-                    {% if req.id in user_met_requirements %}checked{% endif %}>
-                <label class="form-check-label" for="req_{{ req.id }}">{{ req.name }}</label>
-            </div>
-        {% endfor %}
-        <button type="submit" class="btn btn-primary mt-2">Save My Requirements</button>
-    </form>
-{% endif %}
-
 <style>
-    /* Improve form rendering */
     input[type='text'], input[type='number'], textarea, select {
         display: block;
         width: 100%;
@@ -121,19 +72,69 @@
     #id_tags li { display: block; }
 </style>
 <script>
-document.getElementById('id_new_requirements').addEventListener('input', function() {
-    const container = document.getElementById('new-requirements-list');
-    container.innerHTML = '';
-    const values = this.value.split(',').map(v => v.trim()).filter(v => v);
-    values.forEach((val, idx) => {
-        const id = 'new_req_' + idx;
-        container.innerHTML += `
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" checked id="${id}" name="new_requirements_checkboxes" value="${val}">
-                <label class="form-check-label" for="${id}">${val}</label>
-            </div>
-        `;
+const categories = [{% for cat in categories %}"{{ cat.name }}",{% endfor %}];
+const tags = [{% for tag in all_tags %}"{{ tag.name }}",{% endfor %}];
+
+function suggest(input, suggestions, data) {
+    const value = input.value.toLowerCase();
+    suggestions.innerHTML = '';
+    if (value.length === 0) return;
+    data.filter(item => item.toLowerCase().startsWith(value)).forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'list-group-item list-group-item-action';
+        div.textContent = item;
+        div.onclick = () => {
+            input.value = item;
+            suggestions.innerHTML = '';
+        };
+        suggestions.appendChild(div);
+    });
+}
+
+document.getElementById('category-input').addEventListener('input', function() {
+    suggest(this, document.getElementById('category-suggestions'), categories);
+});
+
+let selectedTags = [];
+document.getElementById('tags-input').addEventListener('input', function() {
+    const input = this;
+    const suggestions = document.getElementById('tags-suggestions');
+    const value = input.value.toLowerCase();
+    suggestions.innerHTML = '';
+    if (value.length === 0) return;
+    tags.filter(tag => tag.toLowerCase().startsWith(value) && !selectedTags.includes(tag)).forEach(tag => {
+        const div = document.createElement('div');
+        div.className = 'list-group-item list-group-item-action';
+        div.textContent = tag;
+        div.onclick = () => {
+            selectedTags.push(tag);
+            updateSelectedTags();
+            input.value = '';
+            suggestions.innerHTML = '';
+        };
+        suggestions.appendChild(div);
     });
 });
+
+function updateSelectedTags() {
+    const container = document.getElementById('selected-tags');
+    container.innerHTML = '';
+    selectedTags.forEach(tag => {
+        const span = document.createElement('span');
+        span.className = 'badge bg-primary me-1';
+        span.textContent = tag;
+        container.appendChild(span);
+    });
+    // Add hidden input for form submission
+    let hidden = document.getElementById('hidden-tags');
+    if (!hidden) {
+        hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = 'selected_tags';
+        hidden.id = 'hidden-tags';
+        document.querySelector('form').appendChild(hidden);
+    }
+    hidden.value = selectedTags.join(',');
+}
 </script>
 {% endblock %}
