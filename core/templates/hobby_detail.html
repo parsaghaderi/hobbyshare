@@ -2,262 +2,230 @@
 
 {% block content %}
 <style>
-    body {
-        font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
-        background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
-    }
-    .card {
-        border-radius: 1rem;
-        box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    body { background: #f9daa6ff; }
+    .oishii-card {
+        background: #fff;
+        border-radius: 1.5rem;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.07);
         border: none;
+        padding: 2rem;
+        margin-bottom: 2rem;
     }
-    .card-title, h2, h4, h5 {
-        font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
-        font-weight: 700;
+    .oishii-title {
+        font-family: 'Rounded Mplus 1c', 'Montserrat', 'Playfair Display', Arial, sans-serif;
+        font-weight: 900;
+        font-size: 2.2rem;
+        color: #1820FF;
+        margin-bottom: .5em;
         letter-spacing: 1px;
     }
-    .badge {
-        font-size: 1rem;
-        padding: .5em 1em;
-        border-radius: 1em;
-        font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
-    }
-    .list-group-item {
-        font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
-        font-size: 1.05rem;
-        background: #f7fafd;
-        border: none;
-        border-bottom: 1px solid #e3e3e3;
-    }
-    .form-check-label {
-        font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
-        font-size: 1.05rem;
-    }
-    .form-check-input:checked {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-    }
-    .btn-primary, .btn-success {
-        font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
-        font-weight: 600;
-        letter-spacing: 0.5px;
+    .oishii-badge {
+        display: inline-block;
+        padding: .4em 1.2em;
         border-radius: 2em;
-        padding: .5em 2em;
-        box-shadow: 0 2px 8px rgba(13,110,253,0.08);
-        transition: background 0.2s;
+        font-size: 1rem;
+        font-weight: 700;
+        margin-right: .5em;
+        margin-bottom: .3em;
+        background: #fbeac6ff;
+        color: #1820FF;
+        border: 2px solid #1820FF;
     }
-    .btn-primary:hover, .btn-success:hover {
-        background: linear-gradient(90deg, #0d6efd 60%, #6ea8fe 100%);
+    .oishii-badge.orange {
+        background: #FFE5D0;
+        color: #ff4e42;
+        border: 2px solid #ff4e42;
     }
-    .table {
+    .oishii-badge.yellow {
+        background: #FFFCED;
+        color: #FFC024;
+        border: 2px solid #FFC024;
+    }
+    .oishii-btn {
+        border-radius: 2em;
+        font-weight: 700;
+        padding: .7em 2em;
+        border: none;
+        background: #1820FF;
+        color: #fff;
+        font-size: 1.1rem;
+        letter-spacing: 1px;
+        transition: background .2s;
+        box-shadow: 0 2px 8px rgba(24,32,255,0.08);
+        margin-right: .5em;
+    }
+    .oishii-btn.orange {
+        background: #ff4e42;
+        color: #fff;
+    }
+    .oishii-btn.yellow {
+        background: #FFC024;
+        color: #000;
+    }
+    .oishii-btn:disabled {
+        background: #e3e3e3;
+        color: #aaa;
+    }
+    .oishii-info {
+        background: #FFFCED;
+        border-radius: 1em;
+        padding: 1em 1.5em;
+        margin-bottom: 1em;
+        font-size: 1.08rem;
+        display: flex;
+        align-items: center;
+        gap: .7em;
+        color: #1820FF;
+        font-weight: 600;
+    }
+    .oishii-info.orange {
+        color: #1820FF;
+    }
+    .oishii-info.yellow {
+        background: #FFFCED;
+        color: #1820FF;
+    }
+    .oishii-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
         background: #fff;
         border-radius: 1em;
         overflow: hidden;
         box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        margin-top: 1em;
     }
-    .table th {
-        background: #e0eafc;
-        font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
-        font-weight: 600;
-        letter-spacing: 1px;
+    .oishii-table th, .oishii-table td {
+        padding: .8em 1em;
+        font-size: 1rem;
+        border-bottom: 1px solid #FFFCED;
+        text-align: center;
     }
-    .table td {
-        font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
-    }
-    .card-img-top {
-        border-radius: 1rem 1rem 0 0;
-        object-fit: cover;
-        height: 280px;
-    }
-    .card-header {
-        background: linear-gradient(90deg, #0d6efd 60%, #6ea8fe 100%);
+    .oishii-table th {
+        background: #1820FF;
         color: #fff;
-        font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
-        font-weight: 600;
+        font-weight: 700;
         letter-spacing: 1px;
-        border-radius: 1rem 1rem 0 0;
     }
-    .card-body {
-        background: #f7fafd;
-        border-radius: 0 0 1rem 1rem;
+    .oishii-table tr:last-child td { border-bottom: none; }
+    .oishii-label {
+        font-family: 'Rounded Mplus 1c', 'Montserrat', Arial, sans-serif;
+        font-weight: 700;
+        color: #1820FF;
+        margin-bottom: .5em;
+        display: block;
     }
-    .form-select, .form-control {
-        border-radius: 2em;
-        font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
-        font-size: 1.05rem;
-        padding: .5em 1em;
+    .oishii-checkbox {
+        accent-color: #1820FF;
+        margin-right: .5em;
     }
-    .form-select:focus, .form-control:focus {
-        border-color: #0d6efd;
-        box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25);
+    .icon {
+        font-size: 1.2em;
+        margin-right: .5em;
     }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card mb-4">
-            {% if hobby.image %}
-            <img src="{{ hobby.image.url }}" class="card-img-top" alt="{{ hobby.title }}">
+<div class="oishii-card">
+    {% if hobby.image %}
+        <img src="{{ hobby.image.url }}" alt="{{ hobby.title }}" style="width:100%; border-radius:1em; margin-bottom:1.5em;">
+    {% endif %}
+    <div class="oishii-title">{{ hobby.title }}</div>
+    <div>
+        <span class="oishii-badge orange">{{ hobby.category.name }}</span>
+        {% for tag in hobby.tags.all %}
+            <span class="oishii-badge">{{ tag.name }}</span>
+        {% endfor %}
+    </div>
+    <p style="font-size:1.15rem; margin:1em 0; color:#222;">{{ hobby.description }}</p>
+    <div class="oishii-info"><span class="icon">👤</span><strong>Host:</strong> {{ hobby.host.username }}</div>
+    <div class="oishii-info orange"><span class="icon">👥</span><strong>Participants:</strong> {{ hobby.get_participant_count }} / {{ hobby.max_participants }}</div>
+    <div class="oishii-info"><span class="icon">⭐</span><strong>Host Rating:</strong> {{ hobby.get_average_rating|floatformat:1 }} / 5.0</div>
+    <div class="oishii-info yellow"><span class="icon">📅</span><strong>Date & Time:</strong> {{ hobby.date|date:"M d, Y H:i" }}</div>
+    <div class="oishii-info"><span class="icon">📍</span><strong>Place:</strong> {{ hobby.place }}</div>
+    {% if user.is_authenticated and not is_host %}
+        {% if user_application %}
+            <div class="oishii-info">
+                <span class="icon">✅</span>
+                <span>Status: <strong>{{ user_application.get_status_display }}</strong></span>
+                {% if user_application.status == 'pending' or user_application.status == 'accepted' %}
+                    <form method="post" action="{% url 'withdraw_application' hobby.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="oishii-btn orange">Withdraw</button>
+                    </form>
+                {% endif %}
+            </div>
+            <div class="oishii-info orange">
+                <span class="icon">ℹ️</span>
+                You have already sent a request to join this hobby.
+            </div>
+            {% if contact_info %}
+                <div class="oishii-info">
+                    <span class="icon">📞</span>
+                    Host Contact: {{ contact_info }}
+                </div>
             {% endif %}
-            <div class="card-body">
-                <h1 class="card-title mb-2">{{ hobby.title }}</h1>
-                <div class="mb-3">
-                    <span class="badge bg-secondary">{{ hobby.category.name }}</span>
-                    {% for tag in hobby.tags.all %}
-                    <span class="badge bg-info text-dark">{{ tag.name }}</span>
-                    {% endfor %}
-                </div>
-                <p class="card-text">{{ hobby.description }}</p>
-                <ul class="list-group list-group-flush mb-3">
-                    <li class="list-group-item"><strong>Host:</strong> {{ hobby.host.username }}</li>
-                    <li class="list-group-item"><strong>Participants:</strong> {{ hobby.get_participant_count }} / {{ hobby.max_participants }}</li>
-                    <li class="list-group-item"><strong>Host Rating:</strong> {{ hobby.get_average_rating|floatformat:1 }} / 5.0 ⭐</li>
-                </ul>
-                <div class="mb-3">
-                    <span class="badge bg-light text-dark"><strong>Date & Time:</strong> {{ hobby.date|date:"M d, Y H:i" }}</span>
-                    <span class="badge bg-light text-dark"><strong>Place:</strong> {{ hobby.place }}</span>
-                </div>
-                {% if user.is_authenticated and not is_host %}
-                    {% if user_application %}
-                        <div class="d-flex align-items-center mt-3">
-                            <button class="btn btn-secondary me-2" disabled>{{ user_application.get_status_display }}</button>
-                            {% if user_application.status == 'pending' or user_application.status == 'accepted' %}
-                                <form method="post" action="{% url 'withdraw_application' hobby.id %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-outline-danger">Withdraw Application</button>
-                                </form>
-                            {% endif %}
-                        </div>
-                        <div class="mt-2 text-info">
-                            You have already sent a request to join this hobby.
-                        </div>
-                        {% if contact_info %}
-                        <div class="alert alert-success mt-3">Host Contact: {{ contact_info }}</div>
-                        {% endif %}
-                    {% else %}
-                        <a href="{% url 'apply_for_hobby' hobby.id %}" class="btn btn-primary mt-3">Apply to Join</a>
-                    {% endif %}
-                {% endif %}
-            </div>
-        </div>
-        
-        {% if user.is_authenticated and not is_host and user_application.status == 'accepted' %}
-        <div class="card mt-4">
-            <div class="card-body">
-                <h5 class="card-title">Rate this Host</h5>
-                <form method="post" action="{% url 'rate_hobby' hobby.id %}">
-                    {% csrf_token %}
-                    <select name="score" class="form-select mb-2">
-                        <option value="5">5 - Excellent</option>
-                        <option value="4">4 - Good</option>
-                        <option value="3">3 - Average</option>
-                        <option value="2">2 - Fair</option>
-                        <option value="1">1 - Poor</option>
-                    </select>
-                    <button type="submit" class="btn btn-success">Submit Rating</button>
-                </form>
-            </div>
-        </div>
+        {% else %}
+            <a href="{% url 'apply_for_hobby' hobby.id %}" class="oishii-btn">Apply to Join</a>
         {% endif %}
-    </div>
+    {% endif %}
+</div>
 
-    <div class="col-md-4">
-        {% if is_host %}
-        <div class="card mb-4">
-            <div class="card-header">Applications</div>
-            <ul class="list-group list-group-flush">
-                {% for app in hobby.applications.all %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span><i class="bi bi-person-circle"></i> {{ app.applicant.username }}</span>
-                    {% if app.status == 'pending' %}
-                    <div>
-                        <a href="{% url 'manage_application' app.id 'accepted' %}" class="btn btn-sm btn-success">✔</a>
-                        <a href="{% url 'manage_application' app.id 'rejected' %}" class="btn btn-sm btn-danger">✖</a>
-                    </div>
-                    {% else %}
-                    <span class="badge bg-light text-dark">{{ app.get_status_display }}</span>
-                    {% endif %}
-                </li>
-                {% empty %}
-                <li class="list-group-item">No applications yet.</li>
+<div class="oishii-card">
+    <h2 style="color:#FF7A00; font-family:'Rounded Mplus 1c', 'Montserrat', Arial, sans-serif;">Requirements</h2>
+    <div style="margin-bottom:1em;">
+        {% for req in hobby.requirements.all %}
+            <span class="oishii-badge">{{ req.name }}</span>
+        {% empty %}
+            <span class="oishii-badge orange">No requirements listed.</span>
+        {% endfor %}
+    </div>
+    {% if not is_host %}
+    <form method="post">
+        {% csrf_token %}
+        <span class="oishii-label">Which requirements do you meet?</span>
+        <div style="display:flex; flex-wrap:wrap; gap:1em;">
+            {% for req in hobby.requirements.all %}
+                <label class="oishii-info orange" style="flex:1 1 200px;">
+                    <input class="oishii-checkbox" type="checkbox" name="met_requirements" value="{{ req.id }}" {% if req.id in user_met_requirements %}checked{% endif %}>
+                    {{ req.name }}
+                </label>
+            {% endfor %}
+        </div>
+        <button type="submit" class="oishii-btn mt-2">Save My Requirements</button>
+    </form>
+    {% endif %}
+</div>
+
+{% if is_host %}
+<div class="oishii-card">
+    <h2 style="color:#1820FF; font-family:'Rounded Mplus 1c', 'Montserrat', Arial, sans-serif;">Who meets each requirement?</h2>
+    <table class="oishii-table">
+        <thead>
+            <tr>
+                <th>User</th>
+                {% for req in hobby.requirements.all %}
+                    <th>{{ req.name }}</th>
                 {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-    </div>
+            </tr>
+        </thead>
+        <tbody>
+            {% for username, reqs in user_requirements.items %}
+            <tr>
+                <td>{{ username }}</td>
+                {% for req in hobby.requirements.all %}
+                    <td>
+                        {% if req.name in reqs %}
+                            <span style="color:#1820FF; font-size:1.3em;">&#10003;</span>
+                        {% else %}
+                            <span style="color:#FF7A00; font-size:1.3em;">&#10007;</span>
+                        {% endif %}
+                    </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
-
-<div class="row mt-4">
-    <div class="col-md-7">
-        <div class="card mb-4">
-            <div class="card-body">
-                <h4>Requirements</h4>
-                <ul class="list-group list-group-horizontal-md mb-3">
-                    {% for req in hobby.requirements.all %}
-                        <li class="list-group-item">
-                            <input type="checkbox" name="requirement_{{ req.id }}" id="requirement_{{ req.id }}">
-                            <label for="requirement_{{ req.id }}">{{ req.name }}</label>
-                        </li>
-                    {% empty %}
-                        <li class="list-group-item">No requirements listed.</li>
-                    {% endfor %}
-                </ul>
-                {% if not is_host %}
-                <form method="post">
-                    {% csrf_token %}
-                    <h5 class="mb-3">Which requirements do you meet?</h5>
-                    <div class="row">
-                        {% for req in hobby.requirements.all %}
-                        <div class="col-md-6 mb-2">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="met_requirements" value="{{ req.id }}" id="req_{{ req.id }}"
-                                    {% if req.id in user_met_requirements %}checked{% endif %}>
-                                <label class="form-check-label" for="req_{{ req.id }}">{{ req.name }}</label>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    <button type="submit" class="btn btn-primary mt-2">Save My Requirements</button>
-                </form>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    <div class="col-md-5">
-        {% if is_host %}
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5>Who meets each requirement?</h5>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>User</th>
-                            {% for req in hobby.requirements.all %}
-                                <th>{{ req.name }}</th>
-                            {% endfor %}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for username, reqs in user_requirements.items %}
-                        <tr>
-                            <td>{{ username }}</td>
-                            {% for req in hobby.requirements.all %}
-                                <td class="text-center">
-                                    {% if req.name in reqs %}
-                                        <span class="text-success">&#10003;</span>
-                                    {% else %}
-                                        <span class="text-danger">&#10007;</span>
-                                    {% endif %}
-                                </td>
-                            {% endfor %}
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        {% endif %}
-    </div>
-</div>
+{% endif %}
 {% endblock %}
