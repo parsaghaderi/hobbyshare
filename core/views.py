@@ -22,9 +22,16 @@ def home(request):
     context = {'hobbies': hobbies, 'categories': categories}
     return render(request, 'home.html', context)
 
+@login_required(login_url='login')
 def hobby_detail(request, hobby_id):
+    if not request.user.is_authenticated:
+        return redirect('login')
+        
     hobby = get_object_or_404(Hobby, id=hobby_id)
     is_host = request.user == hobby.host
+    user_application = None
+    if request.user.is_authenticated and not is_host:
+        user_application = hobby.applications.filter(applicant=request.user).first()
 
     user_met_requirements = UserRequirement.objects.filter(
         user=request.user, hobby=hobby
@@ -48,6 +55,7 @@ def hobby_detail(request, hobby_id):
     context = {
         'hobby': hobby,
         'is_host': is_host,
+        'user_application': user_application,
         'user_met_requirements': user_met_requirements,
         'user_requirements': user_requirements,
     }
@@ -171,3 +179,11 @@ def owner_profile(request, user_id):
         'hobbies': hobbies,
         'overall_rating': overall_rating,
     })
+
+@login_required
+def withdraw_application(request, hobby_id):
+    hobby = get_object_or_404(Hobby, id=hobby_id)
+    application = hobby.applications.filter(applicant=request.user).first()
+    if application:
+        application.delete()
+    return redirect('hobby_detail', hobby_id=hobby.id)

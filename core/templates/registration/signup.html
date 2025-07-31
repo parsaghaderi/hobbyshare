@@ -3,9 +3,9 @@
 {% block content %}
 <div class="row">
     <div class="col-md-6 offset-md-3">
-        <div class="card">
+        <div class="card mt-5">
             <div class="card-body">
-                <h2 class="card-title text-center">Create an Account</h2>
+                <h2 class="card-title text-center mb-4">Create an Account</h2>
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     {{ form.as_p }}
@@ -20,8 +20,4 @@
         </div>
     </div>
 </div>
-<style>
-    .card-body ul { list-style-type: none; padding: 0; }
-    .card-body .helptext { font-size: 0.8rem; color: #6c757d; }
-</style>
 {% endblock %}

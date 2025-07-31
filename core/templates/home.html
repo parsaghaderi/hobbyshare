@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="text-center mb-5">
-    <h1>Find Your Next Hobby Adventure</h1>
+    <h1 class="card-title">Find Your Next Hobby Adventure</h1>
     <p class="lead">Connect with people who share your passion.</p>
 </div>
 
@@ -28,7 +28,7 @@
     <div class="col">
         <div class="card h-100">
             {% if hobby.image %}
-            <img src="{{ hobby.image.url }}" class="card-img-top" alt="{{ hobby.title }}" style="height: 200px; object-fit: cover;">
+            <img src="{{ hobby.image.url }}" class="card-img-top" alt="{{ hobby.title }}">
             {% endif %}
             <div class="card-body">
                 <h5 class="card-title">{{ hobby.title }}</h5>

@@ -2,12 +2,12 @@
 
 {% block content %}
 <div class="col-md-8 offset-md-2">
-    <div class="card">
+    <div class="card mt-4">
         <div class="card-body">
-            <h2 class="card-title">Post a New Hobby</h2>
+            <h2 class="card-title mb-4">Post a New Hobby</h2>
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
-                
+                <!-- Use .form-label and .form-control for all fields -->
                 <div class="mb-3">
                     <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
                     {{ form.title }}
@@ -16,7 +16,7 @@
                     <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
                     {{ form.description }}
                 </div>
-                 <div class="mb-3">
+                <div class="mb-3">
                     <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
                     {{ form.image }}
                 </div>
@@ -64,7 +64,6 @@
                     {{ form.new_requirements }}
                     <small class="form-text text-muted">Add new requirements (comma separated).</small>
                 </div>
-                
                 <button type="submit" class="btn btn-primary">Post Hobby</button>
             </form>
         </div>

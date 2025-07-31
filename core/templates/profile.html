@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>{{ user.username }}'s Profile</h2>
+<h2 class="card-title">{{ user.username }}'s Profile</h2>
 <p class="text-muted">This is your space to share your passions and goals.</p>
 <hr>
 
 <div class="row">
     <div class="col-md-6">
-        <div class="card">
+        <div class="card mb-4">
             <div class="card-body">
                 <h4 class="card-title">Update Your Info</h4>
                 <form method="post" enctype="multipart/form-data">
@@ -48,30 +48,17 @@
                 {% endfor %}
             </div>
         {% endif %}
+        <p><strong>Overall Host Rating:</strong> {{ user.profile.get_host_rating|floatformat:1 }} / 5.0 ⭐</p>
+        <h4>Hobbies You've Signed Up For</h4>
+        <ul>
+            {% for hobby in signed_up_hobbies %}
+                <li>
+                    <a href="{% url 'hobby_detail' hobby.id %}">{{ hobby.title }}</a>
+                    ({{ hobby.date|date:"M d, Y H:i" }} at {{ hobby.place }})
+                </li>
+            {% endfor %}
+        </ul>
     </div>
 </div>
-
-<!-- Show host rating in profile.html -->
-<p><strong>Overall Host Rating:</strong> {{ user.profile.get_host_rating|floatformat:1 }} / 5.0 ⭐</p>
-
-<!-- List hobbies user has signed up for -->
-<h4>Hobbies You've Signed Up For</h4>
-<ul>
-    {% for hobby in signed_up_hobbies %}
-        <li>
-            <a href="{% url 'hobby_detail' hobby.id %}">{{ hobby.title }}</a>
-            ({{ hobby.date|date:"M d, Y H:i" }} at {{ hobby.place }})
-        </li>
-    {% empty %}
-        <li>You haven't signed up for any hobbies yet.</li>
-    {% endfor %}
-</ul>
-
-<!-- Show user's profile picture -->
-{% if profile.image %}
-    <img src="{{ profile.image.url }}" class="img-thumbnail mb-2" style="max-width:150px;">
-{% else %}
-    <p>No profile picture uploaded.</p>
-{% endif %}
 
 {% endblock %}
