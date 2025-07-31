@@ -1,8 +1,9 @@
 from django import forms
-from .models import Hobby, Profile, Requirement
+from .models import Hobby, Profile, Requirement, Tag, Category
 
 class HobbyForm(forms.ModelForm):
     new_category = forms.CharField(required=False, label="Add New Category")
+    new_tag = forms.CharField(required=False, label="Add New Tag")
     new_requirements = forms.CharField(required=False, label="Add New Requirements (comma separated)")
     requirements = forms.ModelMultipleChoiceField(
         queryset=Requirement.objects.all(),

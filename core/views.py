@@ -24,40 +24,34 @@ def home(request):
 
 @login_required(login_url='login')
 def hobby_detail(request, hobby_id):
-    if not request.user.is_authenticated:
-        return redirect('login')
-        
     hobby = get_object_or_404(Hobby, id=hobby_id)
     is_host = request.user == hobby.host
     user_application = None
     if request.user.is_authenticated and not is_host:
         user_application = hobby.applications.filter(applicant=request.user).first()
 
-    user_met_requirements = UserRequirement.objects.filter(
-        user=request.user, hobby=hobby
-    ).values_list('requirement_id', flat=True)
+    # Host: handle application status change
+    if request.method == 'POST' and is_host:
+        app_id = request.POST.get('app_id')
+        action = request.POST.get('action')
+        application = hobby.applications.filter(id=app_id).first()
+        if application:
+            if action == 'accept':
+                application.status = 'accepted'
+                application.save()
+            elif action == 'reject':
+                application.status = 'rejected'
+                application.save()
+            elif action == 'remove' and application.status == 'accepted':
+                application.delete()  # Remove the participant from the event
 
-    if request.method == 'POST' and not is_host:
-        selected = request.POST.getlist('met_requirements')
-        UserRequirement.objects.filter(user=request.user, hobby=hobby).delete()
-        for req_id in selected:
-            UserRequirement.objects.create(user=request.user, hobby=hobby, requirement_id=req_id)
-        user_met_requirements = selected
-
-    # For host: show which requirements each user meets
-    user_requirements = {}
-    if is_host:
-        applications = hobby.applications.all()
-        for app in applications:
-            reqs = UserRequirement.objects.filter(user=app.applicant, hobby=hobby).values_list('requirement__name', flat=True)
-            user_requirements[app.applicant.username] = list(reqs)
+    applications = hobby.applications.all() if is_host else None
 
     context = {
         'hobby': hobby,
         'is_host': is_host,
         'user_application': user_application,
-        'user_met_requirements': user_met_requirements,
-        'user_requirements': user_requirements,
+        'applications': applications,
     }
     return render(request, 'hobby_detail.html', context)
 
@@ -71,23 +65,31 @@ def create_hobby(request):
         form = HobbyForm(request.POST, request.FILES)
         selected_tags = request.POST.get('selected_tags', '')
         category_name = request.POST.get('category', '').strip()
+        new_category = request.POST.get('new_category', '').strip()
+        new_tag = request.POST.get('new_tag', '').strip()
         if form.is_valid():
             hobby = form.save(commit=False)
-            hobby.host = request.user  # <-- Add this line
+            hobby.host = request.user
             # Handle category
-            if category_name:
+            if new_category:
+                category, _ = Category.objects.get_or_create(name=new_category)
+                hobby.category = category
+            elif category_name:
                 category, _ = Category.objects.get_or_create(name=category_name)
                 hobby.category = category
             hobby.save()
             # Handle tags
+            tag_names = []
             if selected_tags:
-                tag_names = [t.strip() for t in selected_tags.split(',') if t.strip()]
-                for tag_name in tag_names:
-                    tag, _ = Tag.objects.get_or_create(name=tag_name)
-                    hobby.tags.add(tag)
+                tag_names += [t.strip() for t in selected_tags.split(',') if t.strip()]
+            if new_tag:
+                tag_names.append(new_tag)
+            for tag_name in tag_names:
+                tag, _ = Tag.objects.get_or_create(name=tag_name)
+                hobby.tags.add(tag)
             return redirect('home')
         else:
-            print(form.errors)  # Log errors for debugging
+            print(form.errors)
     else:
         form = HobbyForm()
     return render(request, 'hobby_form.html', {
@@ -216,4 +218,36 @@ def host_summary(request, username):
         'profile': profile,
         'hobbies': hobbies,
         'reviews': reviews,
+    })
+
+@login_required
+def edit_hobby(request, hobby_id):
+    hobby = get_object_or_404(Hobby, id=hobby_id, host=request.user)
+    categories = Category.objects.all()
+    all_tags = Tag.objects.all()
+    if request.method == 'POST':
+        form = HobbyForm(request.POST, request.FILES, instance=hobby)
+        selected_tags = request.POST.get('selected_tags', '')
+        category_name = request.POST.get('category', '').strip()
+        if form.is_valid():
+            hobby = form.save(commit=False)
+            if category_name:
+                category, _ = Category.objects.get_or_create(name=category_name)
+                hobby.category = category
+            hobby.save()
+            hobby.tags.clear()
+            if selected_tags:
+                tag_names = [t.strip() for t in selected_tags.split(',') if t.strip()]
+                for tag_name in tag_names:
+                    tag, _ = Tag.objects.get_or_create(name=tag_name)
+                    hobby.tags.add(tag)
+            return redirect('hobby_detail', hobby_id=hobby.id)
+    else:
+        form = HobbyForm(instance=hobby)
+    return render(request, 'hobby_form.html', {
+        'form': form,
+        'categories': categories,
+        'all_tags': all_tags,
+        'edit_mode': True,
+        'hobby': hobby,
     })

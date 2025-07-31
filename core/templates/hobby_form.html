@@ -1,55 +1,58 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="col-md-8 offset-md-2">
-    <div class="card mt-4">
-        <div class="card-body">
-            <h2 class="card-title mb-4">Post a New Hobby</h2>
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <!-- Use .form-label and .form-control for all fields -->
-                <div class="mb-3">
-                    <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
-                    {{ form.title }}
-                </div>
-                <div class="mb-3">
-                    <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
-                    {{ form.description }}
-                </div>
-                <div class="mb-3">
-                    <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
-                    {{ form.image }}
-                </div>
-                <div class="mb-3">
-                    <label for="category-input" class="form-label">Category</label>
-                    <input type="text" id="category-input" name="category" class="form-control" autocomplete="off" placeholder="Type to search or add category...">
-                    <div id="category-suggestions" class="list-group mt-1"></div>
-                </div>
-                <div class="mb-3">
-                    <label for="tags-input" class="form-label">Tags</label>
-                    <input type="text" id="tags-input" name="tags" class="form-control" autocomplete="off" placeholder="Type to search or add tags...">
-                    <div id="tags-suggestions" class="list-group mt-1"></div>
-                    <div id="selected-tags" class="mt-2"></div>
-                </div>
-                <div class="mb-3">
-                    <label for="{{ form.max_participants.id_for_label }}" class="form-label">{{ form.max_participants.label }}</label>
-                    {{ form.max_participants }}
-                </div>
-                <div class="mb-3">
-                    <label for="{{ form.new_tags.id_for_label }}" class="form-label">{{ form.new_tags.label }}</label>
-                    {{ form.new_tags }}
-                </div>
-                <div class="mb-3">
-                    <label for="id_date" class="form-label">Event Date & Time</label>
-                    {{ form.date }}
-                </div>
-                <div class="mb-3">
-                    <label for="id_place" class="form-label">Place</label>
-                    {{ form.place }}
-                </div>
-                <button type="submit" class="btn btn-primary">Post Hobby</button>
-            </form>
-        </div>
+<div class="card mx-auto mt-5" style="max-width: 600px;">
+    <div class="card-body" style="font-family: 'Montserrat', sans-serif;">
+        {% if edit_mode %}
+            <h2 class="card-title" style="color: #1976d2; font-weight: bold;">Edit Hobby</h2>
+        {% else %}
+            <h2 class="card-title" style="color: #1976d2; font-weight: bold;">Post a New Hobby</h2>
+        {% endif %}
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <!-- Use .form-label and .form-control for all fields -->
+            <div class="mb-3">
+                <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
+                {{ form.title }}
+            </div>
+            <div class="mb-3">
+                <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+                {{ form.description }}
+            </div>
+            <div class="mb-3">
+                <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
+                {{ form.image }}
+            </div>
+            <div class="mb-3">
+                <label for="category-input" class="form-label">Category</label>
+                <input type="text" id="category-input" name="category" class="form-control" autocomplete="off" placeholder="Type to search or add category..." value="{% if edit_mode and hobby.category %}{{ hobby.category.name }}{% endif %}">
+                <div id="category-suggestions" class="list-group mt-1"></div>
+                <div id="category-status" class="mt-2"></div>
+            </div>
+            <div class="mb-3">
+                <label for="tags-input" class="form-label">Tags</label>
+                <input type="text" id="tags-input" name="tags" class="form-control" autocomplete="off" placeholder="Type to search or add tags...">
+                <div id="tags-suggestions" class="list-group mt-1"></div>
+                <div id="selected-tags" class="mt-2"></div>
+            </div>
+            <div class="mb-3">
+                <label for="{{ form.max_participants.id_for_label }}" class="form-label">{{ form.max_participants.label }}</label>
+                {{ form.max_participants }}
+            </div>
+            <div class="mb-3">
+                <label for="{{ form.new_tags.id_for_label }}" class="form-label">{{ form.new_tags.label }}</label>
+                {{ form.new_tags }}
+            </div>
+            <div class="mb-3">
+                <label for="id_date" class="form-label">Event Date & Time</label>
+                {{ form.date }}
+            </div>
+            <div class="mb-3">
+                <label for="id_place" class="form-label">Place</label>
+                {{ form.place }}
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Submit <i class="fas fa-plus"></i></button>
+        </form>
     </div>
 </div>
 
@@ -74,7 +77,10 @@
 <script>
 const categories = [{% for cat in categories %}"{{ cat.name }}",{% endfor %}];
 const tags = [{% for tag in all_tags %}"{{ tag.name }}",{% endfor %}];
-
+let selectedTags = [];
+{% if edit_mode and hobby.tags.exists %}
+selectedTags = [{% for tag in hobby.tags.all %}"{{ tag.name }}",{% endfor %}];
+{% endif %}
 function suggest(input, suggestions, data) {
     const value = input.value.toLowerCase();
     suggestions.innerHTML = '';
@@ -85,18 +91,37 @@ function suggest(input, suggestions, data) {
         div.textContent = item;
         div.onclick = () => {
             input.value = item;
+            showCategoryStatus(item, true);
             suggestions.innerHTML = '';
         };
         suggestions.appendChild(div);
     });
 }
 
-document.getElementById('category-input').addEventListener('input', function() {
+function showCategoryStatus(category, exists) {
+    const status = document.getElementById('category-status');
+    if (category) {
+        if (categories.map(c => c.toLowerCase()).includes(category.toLowerCase())) {
+            status.innerHTML = `<span class='badge bg-success'>Category accepted: ${category}</span>`;
+        } else {
+            status.innerHTML = `<span class='badge bg-warning text-dark'>New category will be created: ${category}</span>`;
+        }
+    } else {
+        status.innerHTML = '';
+    }
+}
+
+const categoryInput = document.getElementById('category-input');
+categoryInput.addEventListener('input', function() {
     suggest(this, document.getElementById('category-suggestions'), categories);
+    showCategoryStatus(this.value, false);
+});
+categoryInput.addEventListener('blur', function() {
+    showCategoryStatus(this.value, false);
 });
 
-let selectedTags = [];
-document.getElementById('tags-input').addEventListener('input', function() {
+const tagsInput = document.getElementById('tags-input');
+tagsInput.addEventListener('input', function(e) {
     const input = this;
     const suggestions = document.getElementById('tags-suggestions');
     const value = input.value.toLowerCase();
@@ -114,6 +139,18 @@ document.getElementById('tags-input').addEventListener('input', function() {
         };
         suggestions.appendChild(div);
     });
+});
+tagsInput.addEventListener('keydown', function(e) {
+    if (e.key === ' ' && this.value.trim().length > 0) {
+        const tag = this.value.trim();
+        if (!selectedTags.includes(tag)) {
+            selectedTags.push(tag);
+            updateSelectedTags();
+        }
+        this.value = '';
+        document.getElementById('tags-suggestions').innerHTML = '';
+        e.preventDefault();
+    }
 });
 
 function updateSelectedTags() {
@@ -136,5 +173,9 @@ function updateSelectedTags() {
     }
     hidden.value = selectedTags.join(',');
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateSelectedTags();
+});
 </script>
 {% endblock %}

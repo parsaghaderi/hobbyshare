@@ -19,4 +19,5 @@ urlpatterns = [
     path('hobby/<int:hobby_id>/withdraw/', views.withdraw_application, name='withdraw_application'),
     path('profile/<str:username>/', views.profile, name='profile'),
     path('host/<str:username>/summary/', views.host_summary, name='host_summary'),
+    path('hobby/<int:hobby_id>/edit/', views.edit_hobby, name='edit_hobby'),
 ]
