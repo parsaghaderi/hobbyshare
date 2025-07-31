@@ -86,4 +86,10 @@
 <p><strong>Date & Time:</strong> {{ hobby.date|date:"M d, Y H:i" }}</p>
 <p><strong>Place:</strong> {{ hobby.place }}</p>
 <p><strong>Description:</strong> {{ hobby.description }}</p>
+<p>
+    Hosted by: 
+    <a href="{% url 'owner_profile' hobby.host.id %}">
+        {{ hobby.host.username }}
+    </a>
+</p>
 {% endblock %}

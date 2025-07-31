@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <h3>{{ owner.username }}</h3>
+        {% if profile and profile.image %}
+            <img src="{{ profile.image.url }}" class="img-thumbnail mb-2" style="max-width:150px;">
+        {% endif %}
+        <p><strong>Overall Host Rating:</strong> {{ overall_rating|floatformat:1 }} / 5.0 ⭐</p>
+        {% if profile %}
+            <p>{{ profile.bio }}</p>
+            <p><strong>Goal:</strong> {{ profile.goal }}</p>
+        {% endif %}
+    </div>
+    <div class="col-md-8">
+        <h4>Other Hobbies Posted</h4>
+        <ul>
+            {% for hobby in hobbies %}
+                <li>
+                    <a href="{% url 'hobby_detail' hobby.id %}">{{ hobby.title }}</a>
+                </li>
+            {% empty %}
+                <li>No hobbies posted yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 from .models import Hobby, Category, Application, Profile, Rating, ParticipantRating
 from .forms import HobbyForm, ProfileForm
 from django.db.models import Count
@@ -130,3 +131,15 @@ def user_profile(request):
         'signed_up_hobbies': signed_up_hobbies,
     }
     return render(request, 'profile.html', context)
+
+def owner_profile(request, user_id):
+    owner = get_object_or_404(User, id=user_id)
+    profile = Profile.objects.filter(user=owner).first()
+    hobbies = Hobby.objects.filter(host=owner)
+    overall_rating = profile.get_host_rating() if profile else 0
+    return render(request, 'owner_profile.html', {
+        'owner': owner,
+        'profile': profile,
+        'hobbies': hobbies,
+        'overall_rating': overall_rating,
+    })
