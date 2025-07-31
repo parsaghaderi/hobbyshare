@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title text-center">Create an Account</h2>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="d-grid">
+                      <button type="submit" class="btn btn-primary">Sign Up</button>
+                    </div>
+                </form>
+                 <p class="text-center mt-3">
+                    Already have an account? <a href="{% url 'login' %}">Login</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .card-body ul { list-style-type: none; padding: 0; }
+    .card-body .helptext { font-size: 0.8rem; color: #6c757d; }
+</style>
+{% endblock %}

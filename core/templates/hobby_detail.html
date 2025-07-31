@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            {% if hobby.image %}
+            <img src="{{ hobby.image.url }}" class="card-img-top" alt="{{ hobby.title }}">
+            {% endif %}
+            <div class="card-body">
+                <h1 class="card-title">{{ hobby.title }}</h1>
+                <div class="mb-3">
+                    <span class="badge bg-secondary">{{ hobby.category.name }}</span>
+                    {% for tag in hobby.tags.all %}
+                    <span class="badge bg-info text-dark">{{ tag.name }}</span>
+                    {% endfor %}
+                </div>
+                <p class="card-text">{{ hobby.description }}</p>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Host:</strong> {{ hobby.host.username }}</li>
+                    <li class="list-group-item"><strong>Participants:</strong> {{ hobby.get_participant_count }} / {{ hobby.max_participants }}</li>
+                    <li class="list-group-item"><strong>Host Rating:</strong> {{ hobby.get_average_rating|floatformat:1 }} / 5.0 ⭐</li>
+                </ul>
+
+                {% if user.is_authenticated and not is_host %}
+                    {% if user_application %}
+                        <button class="btn btn-secondary mt-3" disabled>{{ user_application.get_status_display }}</button>
+                        {% if contact_info %}
+                        <div class="alert alert-success mt-3">Host Contact: {{ contact_info }}</div>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'apply_for_hobby' hobby.id %}" class="btn btn-primary mt-3">Apply to Join</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if user.is_authenticated and not is_host and user_application.status == 'accepted' %}
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Rate this Host</h5>
+                <form method="post" action="{% url 'rate_hobby' hobby.id %}">
+                    {% csrf_token %}
+                    <select name="score" class="form-select mb-2">
+                        <option value="5">5 - Excellent</option>
+                        <option value="4">4 - Good</option>
+                        <option value="3">3 - Average</option>
+                        <option value="2">2 - Fair</option>
+                        <option value="1">1 - Poor</option>
+                    </select>
+                    <button type="submit" class="btn btn-success">Submit Rating</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        {% if is_host %}
+        <div class="card">
+            <div class="card-header">Applications</div>
+            <ul class="list-group list-group-flush">
+                {% for app in hobby.applications.all %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ app.applicant.username }}
+                    {% if app.status == 'pending' %}
+                    <div>
+                        <a href="{% url 'manage_application' app.id 'accepted' %}" class="btn btn-sm btn-success">✔</a>
+                        <a href="{% url 'manage_application' app.id 'rejected' %}" class="btn btn-sm btn-danger">✖</a>
+                    </div>
+                    {% else %}
+                    <span class="badge bg-light text-dark">{{ app.get_status_display }}</span>
+                    {% endif %}
+                </li>
+                {% empty %}
+                <li class="list-group-item">No applications yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Show hobby details -->
+<h2>{{ hobby.title }}</h2>
+<p><strong>Date & Time:</strong> {{ hobby.date|date:"M d, Y H:i" }}</p>
+<p><strong>Place:</strong> {{ hobby.place }}</p>
+<p><strong>Description:</strong> {{ hobby.description }}</p>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="col-md-8 offset-md-2">
+    <div class="card">
+        <div class="card-body">
+            <h2 class="card-title">Post a New Hobby</h2>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
+                    {{ form.title }}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+                    {{ form.description }}
+                </div>
+                 <div class="mb-3">
+                    <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
+                    {{ form.image }}
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.category.id_for_label }}" class="form-label">{{ form.category.label }}</label>
+                        {{ form.category }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.new_category.id_for_label }}" class="form-label">{{ form.new_category.label }}</label>
+                        {{ form.new_category }}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.max_participants.id_for_label }}" class="form-label">{{ form.max_participants.label }}</label>
+                    {{ form.max_participants }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label d-block">{{ form.tags.label }}</label>
+                    <div class="border rounded p-2" style="max-height: 150px; overflow-y: auto;">
+                        {{ form.tags }}
+                    </div>
+                </div>
+                 <div class="mb-3">
+                    <label for="{{ form.new_tags.id_for_label }}" class="form-label">{{ form.new_tags.label }}</label>
+                    {{ form.new_tags }}
+                </div>
+                <div class="mb-3">
+                    <label for="id_date" class="form-label">Event Date & Time</label>
+                    {{ form.date }}
+                </div>
+                <div class="mb-3">
+                    <label for="id_place" class="form-label">Place</label>
+                    {{ form.place }}
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Post Hobby</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Improve form rendering */
+    input[type='text'], input[type='number'], textarea, select {
+        display: block;
+        width: 100%;
+        padding: .375rem .75rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #212529;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+    }
+    textarea { min-height: 120px; }
+    #id_tags { list-style-type: none; padding-left: 0; }
+    #id_tags li { display: block; }
+</style>
+{% endblock %}

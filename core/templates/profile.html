@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>{{ user.username }}'s Profile</h2>
+<p class="text-muted">This is your space to share your passions and goals.</p>
+<hr>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Update Your Info</h4>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="{{ form.bio.id_for_label }}" class="form-label">{{ form.bio.label }}</label>
+                        <textarea name="{{ form.bio.name }}" id="{{ form.bio.id_for_label }}" class="form-control" rows="4">{{ form.bio.value|default_if_none:'' }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.goal.id_for_label }}" class="form-label">{{ form.goal.label }}</label>
+                        <input type="text" name="{{ form.goal.name }}" id="{{ form.goal.id_for_label }}" class="form-control" value="{{ form.goal.value|default_if_none:'' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.image.id_for_label }}" class="form-label">Profile Picture</label>
+                        {{ form.image }}
+                        {% if user.profile.image %}
+                            <img src="{{ user.profile.image.url }}" class="img-thumbnail mt-2" style="max-width:150px;">
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Profile</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <h4>Your Posted Hobbies</h4>
+        {% if not user_hobbies %}
+            <div class="alert alert-warning">
+                You haven't posted any hobbies yet. <a href="{% url 'create_hobby' %}">Post one now!</a>
+                <br><small class="d-block mt-2">Remember, you need to have at least one hobby posted to apply for others.</small>
+            </div>
+        {% else %}
+            <div class="list-group">
+                {% for hobby in user_hobbies %}
+                    <a href="{% url 'hobby_detail' hobby.id %}" class="list-group-item list-group-item-action">
+                        {{ hobby.title }}
+                    </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Show host rating in profile.html -->
+<p><strong>Overall Host Rating:</strong> {{ user.profile.get_host_rating|floatformat:1 }} / 5.0 ⭐</p>
+
+<!-- List hobbies user has signed up for -->
+<h4>Hobbies You've Signed Up For</h4>
+<ul>
+    {% for hobby in signed_up_hobbies %}
+        <li>
+            <a href="{% url 'hobby_detail' hobby.id %}">{{ hobby.title }}</a>
+            ({{ hobby.date|date:"M d, Y H:i" }} at {{ hobby.place }})
+        </li>
+    {% empty %}
+        <li>You haven't signed up for any hobbies yet.</li>
+    {% endfor %}
+</ul>
+
+<!-- Show user's profile picture -->
+{% if profile.image %}
+    <img src="{{ profile.image.url }}" class="img-thumbnail mb-2" style="max-width:150px;">
+{% else %}
+    <p>No profile picture uploaded.</p>
+{% endif %}
+
+{% endblock %}
