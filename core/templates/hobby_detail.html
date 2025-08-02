@@ -15,7 +15,7 @@
         font-family: 'Rounded Mplus 1c', 'Montserrat', 'Playfair Display', Arial, sans-serif;
         font-weight: 900;
         font-size: 2.2rem;
-        color: #1820FF;
+        color: #1976d2;
         margin-bottom: .5em;
         letter-spacing: 1px;
     }
@@ -28,8 +28,8 @@
         margin-right: .5em;
         margin-bottom: .3em;
         background: #fbeac6ff;
-        color: #1820FF;
-        border: 2px solid #1820FF;
+        color: #1976d2;
+        border: 2px solid #1976d2;
     }
     .oishii-badge.orange {
         background: #FFE5D0;
@@ -46,7 +46,7 @@
         font-weight: 700;
         padding: .7em 2em;
         border: none;
-        background: #1820FF;
+        background: #1976d2;
         color: #fff;
         font-size: 1.1rem;
         letter-spacing: 1px;
@@ -75,15 +75,15 @@
         display: flex;
         align-items: center;
         gap: .7em;
-        color: #1820FF;
+        color: #1976d2;
         font-weight: 600;
     }
     .oishii-info.orange {
-        color: #1820FF;
+        color: #1976d2;
     }
     .oishii-info.yellow {
         background: #FFFCED;
-        color: #1820FF;
+        color: #1976d2;
     }
     .oishii-table {
         width: 100%;
@@ -102,7 +102,7 @@
         text-align: center;
     }
     .oishii-table th {
-        background: #1820FF;
+        background: #1976d2;
         color: #fff;
         font-weight: 700;
         letter-spacing: 1px;
@@ -111,12 +111,12 @@
     .oishii-label {
         font-family: 'Rounded Mplus 1c', 'Montserrat', Arial, sans-serif;
         font-weight: 700;
-        color: #1820FF;
+        color: #1976d2;
         margin-bottom: .5em;
         display: block;
     }
     .oishii-checkbox {
-        accent-color: #1820FF;
+        accent-color: #1976d2;
         margin-right: .5em;
     }
     .icon {
@@ -143,6 +143,9 @@
     <div class="oishii-info"><span class="icon">⭐</span><strong>Host Rating:</strong> {{ hobby.get_average_rating|floatformat:1 }} / 5.0</div>
     <div class="oishii-info yellow"><span class="icon">📅</span><strong>Date & Time:</strong> {{ hobby.date|date:"M d, Y H:i" }}</div>
     <div class="oishii-info"><span class="icon">📍</span><strong>Place:</strong> {{ hobby.place }}</div>
+    {% if is_host %}
+        <a href="{% url 'edit_hobby' hobby.id %}" class="oishii-btn yellow" style="margin-bottom:1em;">Edit Event</a>
+    {% endif %}
     {% if user.is_authenticated and not is_host %}
         {% if user_application %}
             <div class="oishii-info">
@@ -171,57 +174,40 @@
     {% endif %}
 </div>
 
-<div class="oishii-card">
-    <h2 style="color:#FF7A00; font-family:'Rounded Mplus 1c', 'Montserrat', Arial, sans-serif;">Requirements</h2>
-    <div style="margin-bottom:1em;">
-        {% for req in hobby.requirements.all %}
-            <span class="oishii-badge">{{ req.name }}</span>
-        {% empty %}
-            <span class="oishii-badge orange">No requirements listed.</span>
-        {% endfor %}
-    </div>
-    {% if not is_host %}
-    <form method="post">
-        {% csrf_token %}
-        <span class="oishii-label">Which requirements do you meet?</span>
-        <div style="display:flex; flex-wrap:wrap; gap:1em;">
-            {% for req in hobby.requirements.all %}
-                <label class="oishii-info orange" style="flex:1 1 200px;">
-                    <input class="oishii-checkbox" type="checkbox" name="met_requirements" value="{{ req.id }}" {% if req.id in user_met_requirements %}checked{% endif %}>
-                    {{ req.name }}
-                </label>
-            {% endfor %}
-        </div>
-        <button type="submit" class="oishii-btn mt-2">Save My Requirements</button>
-    </form>
-    {% endif %}
-</div>
-
 {% if is_host %}
 <div class="oishii-card">
-    <h2 style="color:#1820FF; font-family:'Rounded Mplus 1c', 'Montserrat', Arial, sans-serif;">Who meets each requirement?</h2>
+    <h2 style="color:#1976d2;">Manage Applications</h2>
     <table class="oishii-table">
         <thead>
             <tr>
                 <th>User</th>
-                {% for req in hobby.requirements.all %}
-                    <th>{{ req.name }}</th>
-                {% endfor %}
+                <th>Status</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
-            {% for username, reqs in user_requirements.items %}
+            {% for app in applications %}
             <tr>
-                <td>{{ username }}</td>
-                {% for req in hobby.requirements.all %}
-                    <td>
-                        {% if req.name in reqs %}
-                            <span style="color:#1820FF; font-size:1.3em;">&#10003;</span>
-                        {% else %}
-                            <span style="color:#FF7A00; font-size:1.3em;">&#10007;</span>
-                        {% endif %}
-                    </td>
-                {% endfor %}
+                <td>{{ app.applicant.username }}</td>
+                <td>{{ app.get_status_display }}</td>
+                <td>
+                    {% if app.status == 'pending' %}
+                        <form method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="app_id" value="{{ app.id }}">
+                            <button type="submit" name="action" value="accept" class="oishii-btn">Accept</button>
+                            <button type="submit" name="action" value="reject" class="oishii-btn orange">Reject</button>
+                        </form>
+                    {% elif app.status == 'accepted' %}
+                        <form method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="app_id" value="{{ app.id }}">
+                            <button type="submit" name="action" value="remove" class="oishii-btn red">Remove</button>
+                        </form>
+                    {% else %}
+                        <span>{{ app.get_status_display }}</span>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>

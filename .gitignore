@@ -38,3 +38,76 @@ venv/
 
 # Node/npm (if used)
 node_modules/
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Django
+*.log
+*.pot
+*.pyc
+*.sqlite3
+db.sqlite3
+
+# Media uploads
+/media/
+media/
+core/media/
+core/static/
+core/__pycache__/
+hobbyhub/__pycache__/
+core/migrations/
+__pycache__/
+
+# VSCode
+.vscode/
+
+# Environment
+venv/
+.env
+*.env
+
+# OS files
+.DS_Store
+
+# Backup files
+*.bak
+*.swp
+*.swo
+
+# Node/npm (if used)
+node_modules/
+
+
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+.venv/
+*/venv/
+*/env/
+*/.venv/
+
+# Secrets - NEVER commit these
+.env
+*.env
+
+# Database files
+*.sqlite3
+db.sqlite3
+
+# IDE and editor configuration
+.vscode/
+.idea/
+
+# Other
+.DS_Store
