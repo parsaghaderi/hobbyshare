@@ -3,11 +3,12 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Hobby, Category, Application, Profile, Rating, ParticipantRating, Tag
+from .models import Hobby, Category, Application, Profile, Rating, ParticipantRating, Tag, Requirement
 from .forms import HobbyForm, ProfileForm
 from django.db.models import Count
 from django.utils import timezone
 from django.http import JsonResponse
+from django.db import transaction
 import json
 
 def home(request):
@@ -38,12 +39,23 @@ def hobby_detail(request, hobby_id):
     if request.user.is_authenticated:
         user_application = hobby.applications.filter(applicant=request.user).first()
 
+    contact_info = None
+    if user_application and user_application.status == 'accepted':
+        contact_info = hobby.host.email or hobby.host.username
+
+    has_rated = Rating.objects.filter(hobby=hobby, rater=request.user).exists() if request.user.is_authenticated else False
+    applications = hobby.applications.all() if is_host else None
+    accepted_participants = hobby.applications.filter(status='accepted')
+
     context = {
         'hobby': hobby,
         'is_host': is_host,
         'user_application': user_application,
-        'accepted_participants': hobby.applications.filter(status='accepted'),
+        'contact_info': contact_info,
+        'applications': applications,
+        'accepted_participants': accepted_participants,
         'event_has_passed': timezone.now() > hobby.date if hobby.date else False,
+        'has_rated': has_rated,
     }
     return render(request, 'hobby_detail.html', context)
 
@@ -54,36 +66,51 @@ def create_hobby(request):
     Processes standard form data as well as JSON data from Tagify.
     """
     if request.method == 'POST':
-        # Pass request.FILES to handle potential image uploads in the future
         form = HobbyForm(request.POST, request.FILES)
         if form.is_valid():
             hobby = form.save(commit=False)
             hobby.host = request.user
 
-            # Handle Category (ForeignKey)
             category_json = form.cleaned_data.get('category')
             if category_json:
                 try:
-                    category_data = json.loads(category_json)
-                    if category_data:
-                        category_name = category_data[0]['value']
-                        category_obj, _ = Category.objects.get_or_create(name__iexact=category_name, defaults={'name': category_name})
+                    data = json.loads(category_json)
+                    if data:
+                        name = data[0]['value']
+                        category_obj, _ = Category.objects.get_or_create(name__iexact=name, defaults={'name': name})
                         hobby.category = category_obj
-                except (json.JSONDecodeError, IndexError):
+                except (json.JSONDecodeError, IndexError, KeyError):
                     pass
-            
-            # Save the hobby object to get an ID before adding ManyToMany relationships
+
             hobby.save()
 
-            # Handle Tags (ManyToManyField)
             tags_json = form.cleaned_data.get('tags')
             if tags_json:
                 try:
-                    tags_data = json.loads(tags_json)
-                    for tag_info in tags_data:
-                        tag_obj, _ = Tag.objects.get_or_create(name__iexact=tag_info['value'], defaults={'name': tag_info['value']})
-                        hobby.tags.add(tag_obj)
-                except (json.JSONDecodeError, IndexError):
+                    data = json.loads(tags_json)
+                    for t in data:
+                        tag_name = t.get('value')
+                        if tag_name:
+                            tag_obj, _ = Tag.objects.get_or_create(name__iexact=tag_name, defaults={'name': tag_name})
+                            hobby.tags.add(tag_obj)
+                except (json.JSONDecodeError, KeyError, TypeError):
+                    pass
+
+            # Save requirements
+            req_json = form.cleaned_data.get('requirements')
+            if req_json:
+                try:
+                    reqs = json.loads(req_json)
+                    for r in reqs:
+                        name = r.get('name')
+                        provided = r.get('provided', False)
+                        if name:
+                            Requirement.objects.create(
+                                hobby=hobby,
+                                name=name,
+                                provided_by=request.user if provided else None
+                            )
+                except json.JSONDecodeError:
                     pass
 
             return redirect('hobby_detail', hobby_id=hobby.id)
@@ -151,15 +178,21 @@ def signup(request):
     """
     Handles new user registration.
     """
+    if request.user.is_authenticated:
+        return redirect('home')
+
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            Profile.objects.create(user=user) # Create a profile for the new user
+            with transaction.atomic():
+                user = form.save()
+                # Safe even if a post_save signal already created the profile
+                Profile.objects.get_or_create(user=user)
             login(request, user)
             return redirect('home')
     else:
         form = UserCreationForm()
+
     return render(request, 'registration/signup.html', {'form': form})
 
 @login_required
@@ -183,6 +216,23 @@ def edit_profile(request):
     else:
         form = ProfileForm(instance=profile)
     return render(request, 'edit_profile.html', {'form': form})
+
+def owner_profile(request, user_id):
+    owner = get_object_or_404(User, id=user_id)
+    hosted_hobbies = Hobby.objects.filter(host=owner)
+    owner_tags = Tag.objects.filter(hobby__in=hosted_hobbies).distinct()
+    return render(request, 'owner_profile.html', {'owner': owner, 'owner_tags': owner_tags})
+
+@login_required
+def claim_requirement(request, req_id):
+    req = get_object_or_404(Requirement, id=req_id)
+    hobby = req.hobby
+    # Only accepted participants can claim, and only if unclaimed
+    accepted = hobby.applications.filter(applicant=request.user, status='accepted').exists()
+    if accepted and req.provided_by is None:
+        req.provided_by = request.user
+        req.save()
+    return redirect('hobby_detail', hobby_id=hobby.id)
 
 # --- API-style views for JavaScript ---
 

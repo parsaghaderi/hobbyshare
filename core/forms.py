@@ -10,10 +10,11 @@ class HobbyForm(forms.ModelForm):
         required=False,
         help_text="Enter tags separated by commas."
     )
+    requirements = forms.CharField(widget=forms.HiddenInput(), required=False)  # added
 
     class Meta:
         model = Hobby
-        fields = ['title', 'description', 'max_participants', 'date', 'place']
+        fields = ['title', 'description', 'image', 'max_participants', 'date', 'place']  # added image
         widgets = {
             'description': forms.Textarea(attrs={'rows': 4}),
             'date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),

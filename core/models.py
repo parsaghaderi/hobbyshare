@@ -17,6 +17,10 @@ class Profile(models.Model):
         ratings = Rating.objects.filter(hobby__host=self.user)
         return ratings.aggregate(Avg('score'))['score__avg'] or 0
 
+    def get_average_rating(self):
+        # alias used by templates
+        return self.get_host_rating()
+
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
 
@@ -36,6 +40,7 @@ class Hobby(models.Model):
     description = models.TextField()
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     tags = models.ManyToManyField(Tag, blank=True)
+    image = models.ImageField(upload_to='hobby_images/', null=True, blank=True)  # added
     max_participants = models.PositiveIntegerField(default=10)
     date = models.DateTimeField()
     place = models.CharField(max_length=300)
