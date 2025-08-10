@@ -1,77 +1,56 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>{{ user.username }}'s Profile</h2>
-<p class="text-muted">This is your space to share your passions and goals.</p>
-<hr>
-
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-4">
+        <div class="card text-center p-4">
+            {% if user.profile and user.profile.avatar %}
+                <img src="{{ user.profile.avatar.url }}" class="rounded-circle mx-auto mb-3" width="120" height="120" alt="Avatar" style="object-fit: cover;">
+            {% else %}
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAwAB/epv2AAAAABJRU5ErkJggg==" class="rounded-circle mx-auto mb-3 bg-light" width="120" height="120" alt="Avatar">
+            {% endif %}
+            <h4 class="card-title">{{ user.username }}</h4>
+            <p class="text-muted">{{ user.email }}</p>
+            <a href="{% url 'edit_profile' %}" class="btn btn-outline-primary btn-sm">Edit Profile</a>
+        </div>
+    </div>
+    <div class="col-md-8">
         <div class="card">
-            <div class="card-body">
-                <h4 class="card-title">Update Your Info</h4>
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="{{ form.bio.id_for_label }}" class="form-label">{{ form.bio.label }}</label>
-                        <textarea name="{{ form.bio.name }}" id="{{ form.bio.id_for_label }}" class="form-control" rows="4">{{ form.bio.value|default_if_none:'' }}</textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="{{ form.goal.id_for_label }}" class="form-label">{{ form.goal.label }}</label>
-                        <input type="text" name="{{ form.goal.name }}" id="{{ form.goal.id_for_label }}" class="form-control" value="{{ form.goal.value|default_if_none:'' }}">
-                    </div>
-                    <div class="mb-3">
-                        <label for="{{ form.image.id_for_label }}" class="form-label">Profile Picture</label>
-                        {{ form.image }}
-                        {% if user.profile.image %}
-                            <img src="{{ user.profile.image.url }}" class="img-thumbnail mt-2" style="max-width:150px;">
-                        {% endif %}
-                    </div>
-                    <button type="submit" class="btn btn-primary">Save Profile</button>
-                </form>
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs" id="profileTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="hosted-tab" data-bs-toggle="tab" data-bs-target="#hosted" type="button" role="tab">My Hobbies</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="applications-tab" data-bs-toggle="tab" data-bs-target="#applications" type="button" role="tab">My Applications</button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body tab-content" id="profileTabsContent">
+                <div class="tab-pane fade show active" id="hosted" role="tabpanel">
+                    <h5 class="mb-3">Hobbies I'm Hosting</h5>
+                    {% for hobby in user.hosted_hobbies.all %}
+                        <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
+                            <a href="{% url 'hobby_detail' hobby.id %}">{{ hobby.title }}</a>
+                            <span class="badge bg-info">{{ hobby.applications.count }} Application(s)</span>
+                        </div>
+                    {% empty %}
+                        <p>You haven't hosted any hobbies yet. <a href="{% url 'create_hobby' %}">Create one!</a></p>
+                    {% endfor %}
+                </div>
+                <div class="tab-pane fade" id="applications" role="tabpanel">
+                    <h5 class="mb-3">Hobbies I've Applied To</h5>
+                    {% for app in user.applications.all %}
+                        <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
+                            <a href="{% url 'hobby_detail' app.hobby.id %}">{{ app.hobby.title }}</a>
+                            <span class="badge bg-light text-dark">{{ app.get_status_display }}</span>
+                        </div>
+                    {% empty %}
+                        <p>You haven't applied to any hobbies yet. <a href="{% url 'home' %}">Find one!</a></p>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <h4>Your Posted Hobbies</h4>
-        {% if not user_hobbies %}
-            <div class="alert alert-warning">
-                You haven't posted any hobbies yet. <a href="{% url 'create_hobby' %}">Post one now!</a>
-                <br><small class="d-block mt-2">Remember, you need to have at least one hobby posted to apply for others.</small>
-            </div>
-        {% else %}
-            <div class="list-group">
-                {% for hobby in user_hobbies %}
-                    <a href="{% url 'hobby_detail' hobby.id %}" class="list-group-item list-group-item-action">
-                        {{ hobby.title }}
-                    </a>
-                {% endfor %}
-            </div>
-        {% endif %}
-    </div>
 </div>
-
-<!-- Show host rating in profile.html -->
-<p><strong>Overall Host Rating:</strong> {{ user.profile.get_host_rating|floatformat:1 }} / 5.0 ⭐</p>
-
-<!-- List hobbies user has signed up for -->
-<h4>Hobbies You've Signed Up For</h4>
-<ul>
-    {% for hobby in signed_up_hobbies %}
-        <li>
-            <a href="{% url 'hobby_detail' hobby.id %}">{{ hobby.title }}</a>
-            ({{ hobby.date|date:"M d, Y H:i" }} at {{ hobby.place }})
-        </li>
-    {% empty %}
-        <li>You haven't signed up for any hobbies yet.</li>
-    {% endfor %}
-</ul>
-
-<!-- Show user's profile picture -->
-{% if profile.image %}
-    <img src="{{ profile.image.url }}" class="img-thumbnail mb-2" style="max-width:150px;">
-{% else %}
-    <p>No profile picture uploaded.</p>
-{% endif %}
-
 {% endblock %}

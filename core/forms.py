@@ -1,26 +1,22 @@
 from django import forms
-from .models import Hobby, Profile, Requirement
+from .models import Hobby, Profile
 
 class HobbyForm(forms.ModelForm):
-    new_category = forms.CharField(required=False, label="Add New Category")
-    new_tags = forms.CharField(required=False, label="Add New Tags (comma separated)")
-    new_requirements = forms.CharField(required=False, label="Add New Requirements (comma separated)")
-    requirements = forms.ModelMultipleChoiceField(
-        queryset=Requirement.objects.all(),
-        widget=forms.CheckboxSelectMultiple,
+    category = forms.CharField(
         required=False,
-        label="Requirements"
+        help_text="Enter a category for your hobby."
+    )
+    tags = forms.CharField(
+        required=False,
+        help_text="Enter tags separated by commas."
     )
 
     class Meta:
         model = Hobby
-        fields = [
-            'title', 'description', 'image', 'category', 'tags',
-            'max_participants', 'date', 'place', 'requirements'
-        ]
+        fields = ['title', 'description', 'max_participants', 'date', 'place']
         widgets = {
-            'tags': forms.CheckboxSelectMultiple,
-            'date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'description': forms.Textarea(attrs={'rows': 4}),
+            'date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
         }
 
 class ProfileForm(forms.ModelForm):

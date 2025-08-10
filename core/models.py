@@ -1,15 +1,17 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import Avg
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(blank=True)
     goal = models.CharField(max_length=255, blank=True)
-    image = models.ImageField(upload_to='profile_images/', blank=True, null=True)  # New field
+    image = models.ImageField(upload_to='profile_pics/', default='default.jpg', blank=True)
 
     def __str__(self):
-        return self.user.username
+        return f'{self.user.username} Profile'
 
     def get_host_rating(self):
         ratings = Rating.objects.filter(hobby__host=self.user)
@@ -27,24 +29,17 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
 
-class Requirement(models.Model):
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
 
 class Hobby(models.Model):
     host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='hosted_hobbies')
     title = models.CharField(max_length=200)
     description = models.TextField()
-    image = models.ImageField(upload_to='hobby_images/', blank=True, null=True)
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     tags = models.ManyToManyField(Tag, blank=True)
-    requirements = models.ManyToManyField(Requirement, blank=True)
-    max_participants = models.PositiveIntegerField(default=1)
+    max_participants = models.PositiveIntegerField(default=10)
+    date = models.DateTimeField()
+    place = models.CharField(max_length=300)
     created_at = models.DateTimeField(auto_now_add=True)
-    date = models.DateTimeField(null=True, blank=True)  # <-- Add this line
-    place = models.CharField(max_length=255, blank=True)  # <-- Add this line
 
     def __str__(self):
         return self.title
@@ -54,6 +49,18 @@ class Hobby(models.Model):
 
     def get_participant_count(self):
         return self.applications.filter(status='accepted').count()
+
+
+class Requirement(models.Model):
+    hobby = models.ForeignKey(Hobby, on_delete=models.CASCADE, related_name='requirements', null=True)
+    name = models.CharField(max_length=255)
+    provided_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='provided_requirements')
+
+    def __str__(self):
+        if self.hobby:
+            return f"{self.name} for {self.hobby.title}"
+        return f"{self.name} (No associated hobby)"
+
 
 class Application(models.Model):
     STATUS_CHOICES = [('pending', 'Pending'), ('accepted', 'Accepted'), ('rejected', 'Rejected')]
@@ -66,25 +73,31 @@ class Application(models.Model):
     class Meta:
         unique_together = ('hobby', 'applicant')
 
+    def __str__(self):
+        return f'Application by {self.applicant.username} for {self.hobby.title}'
+
 class Rating(models.Model):
     hobby = models.ForeignKey(Hobby, on_delete=models.CASCADE, related_name='ratings')
     rater = models.ForeignKey(User, on_delete=models.CASCADE)
-    score = models.PositiveIntegerField(choices=[(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')])
+    score = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
 
     class Meta:
         unique_together = ('hobby', 'rater')
 
 class ParticipantRating(models.Model):
     hobby = models.ForeignKey(Hobby, on_delete=models.CASCADE)
-    participant = models.ForeignKey(User, on_delete=models.CASCADE)
-    host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='host_ratings')
-    score = models.PositiveIntegerField(choices=[(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')])
-    rated_at = models.DateTimeField(auto_now_add=True)
+    host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='given_ratings')
+    participant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_ratings')
+    score = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
 
     class Meta:
-        unique_together = ('hobby', 'participant')
+        unique_together = ('hobby', 'host', 'participant')
 
-class UserRequirement(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    hobby = models.ForeignKey(Hobby, on_delete=models.CASCADE)
-    requirement = models.ForeignKey(Requirement, on_delete=models.CASCADE)
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()

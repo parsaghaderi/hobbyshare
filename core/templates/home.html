@@ -2,28 +2,32 @@
 
 {% block content %}
 <div class="text-center mb-5">
-    <h1>Find Your Next Hobby Adventure</h1>
-    <p class="lead">Connect with people who share your passion.</p>
+    <h1 class="display-4">Find Your Next Passion</h1>
+    <p class="lead text-muted">Browse hobbies hosted by people in your community or share one of your own.</p>
 </div>
 
-<form method="get" class="row g-3 mb-4 align-items-center">
-    <div class="col-md-6">
-        <input type="text" name="q" class="form-control" placeholder="Search hobbies..." value="{{ request.GET.q }}">
-    </div>
-    <div class="col-md-4">
-        <select name="category" class="form-select">
-            <option value="">All Categories</option>
-            {% for cat in categories %}
-            <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="col-md-2">
-        <button type="submit" class="btn btn-primary w-100">Filter</button>
-    </div>
-</form>
+<!-- Search and Filter Form -->
+<div class="card p-4 mb-5">
+    <form method="get" action="{% url 'home' %}" class="row g-3 align-items-center">
+        <div class="col-md-6">
+            <input type="text" name="q" class="form-control" placeholder="Search for hobbies..." value="{{ request.GET.q }}">
+        </div>
+        <div class="col-md-4">
+            <select name="category" class="form-select">
+                <option value="">All Categories</option>
+                {% for category in categories %}
+                <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Search</button>
+        </div>
+    </form>
+</div>
 
-<div class="row row-cols-1 row-cols-md-3 g-4">
+<!-- Hobby Listings -->
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
     {% for hobby in hobbies %}
     <div class="col">
         <div class="card h-100">
@@ -32,17 +36,18 @@
             {% endif %}
             <div class="card-body">
                 <h5 class="card-title">{{ hobby.title }}</h5>
-                <p class="card-text text-muted">{{ hobby.category.name }}</p>
-                <p class="card-text">{{ hobby.description|truncatewords:20 }}</p>
-                <a href="{% url 'hobby_detail' hobby.id %}" class="btn btn-outline-primary">View Details</a>
+                <p class="card-text text-muted">{{ hobby.description|truncatewords:20 }}</p>
+                <span class="badge" style="background-color: var(--primary-color); color: white;">{{ hobby.category.name|default:"Uncategorized" }}</span>
             </div>
-            <div class="card-footer text-muted">
-                Hosted by: {{ hobby.host.username }} ({{ hobby.host_hobby_count }} hobbies)
+            <div class="card-footer bg-white border-top-0 text-center pb-3">
+                <a href="{% url 'hobby_detail' hobby.id %}" class="btn btn-outline-primary">View Details</a>
             </div>
         </div>
     </div>
     {% empty %}
-    <p>No hobbies found. Why not <a href="{% url 'create_hobby' %}">post one</a>?</p>
+    <div class="col-12">
+        <div class="alert alert-info">No hobbies found. Why not <a href="{% url 'create_hobby' %}">create one</a>?</div>
+    </div>
     {% endfor %}
 </div>
 {% endblock %}

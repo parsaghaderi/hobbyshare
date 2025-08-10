@@ -1,110 +1,128 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="col-md-8 offset-md-2">
-    <div class="card">
-        <div class="card-body">
-            <h2 class="card-title">Post a New Hobby</h2>
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                
-                <div class="mb-3">
-                    <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
-                    {{ form.title }}
-                </div>
-                <div class="mb-3">
-                    <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
-                    {{ form.description }}
-                </div>
-                 <div class="mb-3">
-                    <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
-                    {{ form.image }}
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="{{ form.category.id_for_label }}" class="form-label">{{ form.category.label }}</label>
-                        {{ form.category }}
+<!-- Tagify CSS -->
+<link href="https://unpkg.com/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body p-4 p-md-5">
+                <h2 class="card-title text-center mb-4">Create a New Hobby</h2>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">{{ form.title.label_tag }} {{ form.title }}</div>
+                    <div class="mb-3">{{ form.description.label_tag }} {{ form.description }}</div>
+                    <div class="mb-3">{{ form.image.label_tag }} {{ form.image }}</div>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6 mb-3">{{ form.category.label_tag }} {{ form.category }}</div>
+                        <div class="col-md-6 mb-3">{{ form.tags.label_tag }} {{ form.tags }}</div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="{{ form.new_category.id_for_label }}" class="form-label">{{ form.new_category.label }}</label>
-                        {{ form.new_category }}
+
+                    <div class="row g-3">
+                        <div class="col-md-4 mb-3">{{ form.max_participants.label_tag }} {{ form.max_participants }}</div>
+                        <div class="col-md-4 mb-3">{{ form.date.label_tag }} {{ form.date }}</div>
+                        <div class="col-md-4 mb-3">{{ form.place.label_tag }} {{ form.place }}</div>
                     </div>
-                </div>
-                <div class="mb-3">
-                    <label for="{{ form.max_participants.id_for_label }}" class="form-label">{{ form.max_participants.label }}</label>
-                    {{ form.max_participants }}
-                </div>
-                <div class="mb-3">
-                    <label class="form-label d-block">{{ form.tags.label }}</label>
-                    <div class="border rounded p-2" style="max-height: 150px; overflow-y: auto;">
-                        {{ form.tags }}
+
+                    <!-- Requirements Section -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Requirements (Optional)</label>
+                        <div id="requirements-list" class="mb-2"></div>
+                        <button type="button" id="add-requirement" class="btn btn-sm btn-outline-secondary">Add Requirement</button>
                     </div>
-                </div>
-                <div class="mb-3">
-                    <label for="{{ form.new_tags.id_for_label }}" class="form-label">{{ form.new_tags.label }}</label>
-                    {{ form.new_tags }}
-                </div>
-                <div class="mb-3">
-                    <label for="id_date" class="form-label">Event Date & Time</label>
-                    {{ form.date }}
-                </div>
-                <div class="mb-3">
-                    <label for="id_place" class="form-label">Place</label>
-                    {{ form.place }}
-                </div>
-                <div class="mb-3">
-                    <label class="form-label d-block">{{ form.requirements.label }}</label>
-                    <div class="border rounded p-2" style="max-height: 150px; overflow-y: auto;">
-                        {{ form.requirements }}
+                    {{ form.requirements }}
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">Post Hobby</button>
                     </div>
-                    <small class="form-text text-muted">Check the requirements that apply to this hobby.</small>
-                </div>
-                <div class="mb-3">
-                    <label for="{{ form.new_requirements.id_for_label }}" class="form-label">{{ form.new_requirements.label }}</label>
-                    {{ form.new_requirements }}
-                    <small class="form-text text-muted">Add new requirements (comma separated).</small>
-                </div>
-                
-                <button type="submit" class="btn btn-primary">Post Hobby</button>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 </div>
 
-{% if user == hobby.host %}
-    <!-- Host can add new requirements -->
-    <div class="mb-3">
-        <label class="form-label d-block">Requirements</label>
-        <div id="existing-requirements" class="border rounded p-2" style="max-height: 150px; overflow-y: auto;">
-            {{ form.requirements }}
-        </div>
-        <small class="form-text text-muted">Check the requirements that apply to this hobby.</small>
-    </div>
-    <div class="mb-3">
-        <label for="id_new_requirements" class="form-label">Add New Requirements (comma separated)</label>
-        <input type="text" id="id_new_requirements" name="new_requirements" class="form-control">
-        <small class="form-text text-muted">Add new requirements (comma separated).</small>
-        <div id="new-requirements-list" class="mt-2"></div>
-    </div>
-{% else %}
-    <!-- Participants can check which requirements they meet -->
-    <form method="post">
-        {% csrf_token %}
-        <h5>Which requirements do you meet?</h5>
-        {% for req in hobby.requirements.all %}
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="met_requirements" value="{{ req.id }}" id="req_{{ req.id }}"
-                    {% if req.id in user_met_requirements %}checked{% endif %}>
-                <label class="form-check-label" for="req_{{ req.id }}">{{ req.name }}</label>
+<!-- Tagify JS -->
+<script src="https://unpkg.com/@yaireo/tagify"></script>
+<script src="https://unpkg.com/@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Script for Category Autocomplete
+    const categoryInput = document.querySelector('#{{ form.category.id_for_label }}');
+    fetch("{% url 'get_categories' %}")
+        .then(response => response.json())
+        .then(whitelist => {
+            new Tagify(categoryInput, {
+                whitelist: whitelist,
+                maxTags: 1,
+                dropdown: {
+                    maxItems: 20,
+                    enabled: 0,
+                    closeOnSelect: true
+                }
+            });
+        });
+
+    // Script for Tags Autocomplete
+    const tagsInput = document.querySelector('#{{ form.tags.id_for_label }}');
+    fetch("{% url 'get_tags' %}")
+        .then(response => response.json())
+        .then(whitelist => {
+            new Tagify(tagsInput, {
+                whitelist: whitelist,
+                dropdown: {
+                    maxItems: 20,
+                    enabled: 0,
+                    closeOnSelect: false
+                }
+            });
+        });
+
+    // Requirements script
+    const addReqBtn = document.getElementById('add-requirement');
+    const reqList = document.getElementById('requirements-list');
+    const form = document.querySelector('form');
+    const hiddenReqInput = document.querySelector('[name="requirements"]');
+
+    addReqBtn.addEventListener('click', () => {
+        const reqRow = document.createElement('div');
+        reqRow.classList.add('input-group', 'mb-2');
+        reqRow.innerHTML = `
+            <input type="text" class="form-control requirement-name" placeholder="Requirement name (e.g., Tent)">
+            <div class="input-group-text">
+                <input class="form-check-input mt-0 requirement-provided" type="checkbox" title="Check if you are providing this">
+                <label class="ms-2">I'll provide</label>
             </div>
-        {% endfor %}
-        <button type="submit" class="btn btn-primary mt-2">Save My Requirements</button>
-    </form>
-{% endif %}
+            <button type="button" class="btn btn-outline-danger remove-requirement">Remove</button>
+        `;
+        reqList.appendChild(reqRow);
+    });
+
+    reqList.addEventListener('click', (e) => {
+        if (e.target.classList.contains('remove-requirement')) {
+            e.target.closest('.input-group').remove();
+        }
+    });
+
+    form.addEventListener('submit', (e) => {
+        const requirements = [];
+        document.querySelectorAll('#requirements-list .input-group').forEach(row => {
+            const name = row.querySelector('.requirement-name').value.trim();
+            const provided = row.querySelector('.requirement-provided').checked;
+            if (name) {
+                requirements.push({ name, provided });
+            }
+        });
+        hiddenReqInput.value = JSON.stringify(requirements);
+    });
+});
+</script>
 
 <style>
     /* Improve form rendering */
-    input[type='text'], input[type='number'], textarea, select {
+    input[type='text'], input[type='number'], textarea, select, input[type='datetime-local'] {
         display: block;
         width: 100%;
         padding: .375rem .75rem;
@@ -118,23 +136,9 @@
         border-radius: .25rem;
     }
     textarea { min-height: 120px; }
-    #id_tags { list-style-type: none; padding-left: 0; }
-    #id_tags li { display: block; }
+    .tagify {
+        width: 100%;
+        border: 1px solid #ced4da;
+    }
 </style>
-<script>
-document.getElementById('id_new_requirements').addEventListener('input', function() {
-    const container = document.getElementById('new-requirements-list');
-    container.innerHTML = '';
-    const values = this.value.split(',').map(v => v.trim()).filter(v => v);
-    values.forEach((val, idx) => {
-        const id = 'new_req_' + idx;
-        container.innerHTML += `
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" checked id="${id}" name="new_requirements_checkboxes" value="${val}">
-                <label class="form-check-label" for="${id}">${val}</label>
-            </div>
-        `;
-    });
-});
-</script>
 {% endblock %}
