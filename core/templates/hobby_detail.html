@@ -51,19 +51,85 @@
                 <h5 class="card-title">Rate this Host</h5>
                 <form method="post" action="{% url 'rate_hobby' hobby.id %}">
                     {% csrf_token %}
-                    <select name="score" class="form-select mb-2">
-                        <option value="5">5 - Excellent</option>
-                        <option value="4">4 - Good</option>
-                        <option value="3">3 - Average</option>
-                        <option value="2">2 - Fair</option>
-                        <option value="1">1 - Poor</option>
-                    </select>
-                    <button type="submit" class="btn btn-success">Submit Rating</button>
+                    <div class="row g-2 align-items-center">
+                      <div class="col-auto">
+                        <select name="score" class="form-select form-select-sm">
+                          {% for i in "12345" %}
+                            <option value="{{ forloop.counter }}">{{ forloop.counter }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="col">
+                        <input type="text" name="comment" class="form-control form-control-sm" placeholder="Optional comment">
+                      </div>
+                      <div class="col-auto form-check">
+                        <input class="form-check-input" type="checkbox" name="anonymous" id="anon">
+                        <label class="form-check-label" for="anon">Post anonymously</label>
+                      </div>
+                      <div class="col-auto">
+                        <button class="btn btn-primary btn-sm">Submit</button>
+                      </div>
+                    </div>
                 </form>
             </div>
         </div>
         {% elif has_rated %}
             <div class="alert alert-info mt-4">You have already rated this host.</div>
+        {% endif %}
+
+        {# --- Approved requirements --- #}
+        <h5 class="mt-4">Requirements</h5>
+        <ul class="list-group mb-3">
+          {% for req in hobby.requirements.all %}
+            {% if req.is_approved %}
+              <li class="list-group-item d-flex align-items-center justify-content-between">
+                <div>
+                  {{ req.name }}
+                  {% if req.provided_by %}
+                    <span class="badge bg-success ms-2">
+                      Provided by
+                      {% if req.provided_by_id == user.id %}
+                        you
+                      {% else %}
+                        {{ req.provided_by.username }}
+                      {% endif %}
+                    </span>
+                  {% else %}
+                    <span class="badge bg-warning text-dark ms-2">Not provided</span>
+                  {% endif %}
+                </div>
+                <div class="d-flex align-items-center">
+                  {% if is_host %}
+                  <form method="post" action="{% url 'claim_requirement' req.id %}" class="me-2">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                      {% if req.provided_by_id == user.id %}Unclaim{% else %}Claim{% endif %}
+                    </button>
+                  </form>
+                  {% elif user.is_authenticated and user_application and user_application.status == 'accepted' %}
+                 <form method="post" action="{% url 'claim_requirement' req.id %}" class="me-2">
+                   {% csrf_token %}
+                   <button type="submit" class="btn btn-sm btn-outline-primary">
+                     {% if req.provided_by_id == user.id %}Unclaim{% else %}Claim{% endif %}
+                   </button>
+                 </form>
+               {% endif %}
+              </li>
+            {% endif %}
+          {% empty %}
+            <li class="list-group-item">No requirements yet.</li>
+          {% endfor %}
+        </ul>
+
+        {% comment %} Suggest requirement (add missing CSRF) {% endcomment %}
+        {% if user.is_authenticated and user_application and user_application.status == 'accepted' %}
+          <form class="mb-4" method="post" action="{% url 'suggest_requirement' hobby.id %}">
+            {% csrf_token %}
+            <div class="input-group">
+              <input name="name" type="text" class="form-control" placeholder="Suggest a requirement (e.g., extra water)">
+              <button class="btn btn-outline-secondary" type="submit">Suggest</button>
+            </div>
+          </form>
         {% endif %}
     </div>
 
@@ -93,7 +159,7 @@
         {% endif %}
 
         <div class="card mb-4">
-            <div class="card-header">Participants ({{ hobby.get_participant_count }}/{{ hobby.max_participants }})</div>
+            <div class="card-header">Participants ({{ accepted_participants|length }}/{{ hobby.max_participants }})</div>
             <ul class="list-group list-group-flush">
                 {% for app in accepted_participants %}
                 <li class="list-group-item">{{ app.applicant.username }}</li>
@@ -103,28 +169,117 @@
             </ul>
         </div>
 
-        {% if hobby.requirements.all %}
         <div class="card">
-            <div class="card-header">What's Needed</div>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>What's Needed</span>
+                {% if is_host %}
+                  <form method="post" action="{% url 'add_requirement' hobby.id %}" class="d-flex gap-2">
+                    {% csrf_token %}
+                    <input type="text" name="name" class="form-control form-control-sm" placeholder="Add requirement">
+                    <button type="submit" class="btn btn-sm btn-outline-primary">Add</button>
+                  </form>
+                {% endif %}
+            </div>
             <ul class="list-group list-group-flush">
                 {% for req in hobby.requirements.all %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span>{{ req.name }}</span>
-                    {% if req.provided_by %}
-                        <span class="badge bg-success">Provided by: {{ req.provided_by.username }}</span>
-                    {% elif user.is_authenticated and user_application.status == 'accepted' %}
-                        <form method="post" action="{% url 'claim_requirement' req.id %}">
+                  {% if req.is_approved %}
+                    <li class="list-group-item d-flex align-items-center justify-content-between">
+                      <div>
+                        {{ req.name }}
+                        {% if req.provided_by %}
+                          <span class="badge bg-success ms-2">
+                            Provided by {% if req.provided_by_id == user.id %}you{% else %}{{ req.provided_by.username }}{% endif %}
+                          </span>
+                        {% else %}
+                          <span class="badge bg-warning text-dark ms-2">Not provided</span>
+                        {% endif %}
+                      </div>
+                      <div class="d-flex align-items-center">
+                        {% if is_host %}
+                          <form method="post" action="{% url 'claim_requirement' req.id %}" class="me-2">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-primary">Claim</button>
-                        </form>
-                    {% else %}
-                        <span class="badge bg-warning text-dark">Not provided</span>
-                    {% endif %}
-                </li>
+                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                              {% if req.provided_by_id == user.id %}Unclaim{% else %}Claim{% endif %}
+                            </button>
+                          </form>
+                          <form method="post" action="{% url 'update_requirement' req.id %}" class="d-flex me-2">
+                            {% csrf_token %}
+                            <input type="text" name="name" value="{{ req.name }}" class="form-control form-control-sm" style="max-width: 220px;">
+                            <button class="btn btn-sm btn-outline-secondary ms-2">Save</button>
+                          </form>
+                          <form method="post" action="{% url 'delete_requirement' req.id %}">
+                            {% csrf_token %}
+                            <button class="btn btn-sm btn-outline-danger">Delete</button>
+                          </form>
+                        {% elif user.is_authenticated and user_application and user_application.status == 'accepted' %}
+                          <form method="post" action="{% url 'claim_requirement' req.id %}" class="me-2">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                              {% if req.provided_by_id == user.id %}Unclaim{% else %}Claim{% endif %}
+                            </button>
+                          </form>
+                        {% endif %}
+                      </div>
+                    </li>
+                  {% endif %}
+                {% empty %}
+                  <li class="list-group-item">No requirements yet.</li>
                 {% endfor %}
             </ul>
         </div>
+
+        {% if is_host %}
+          <h6>Pending suggestions</h6>
+          <ul class="list-group mb-3">
+            {% for req in hobby.requirements.all %}
+              {% if not req.is_approved %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <div>{{ req.name }} <span class="text-muted">(suggested by {{ req.suggested_by.username }})</span></div>
+                  <div>
+                    <form method="post" action="{% url 'approve_requirement' req.id %}" class="d-inline">
+                      {% csrf_token %}
+                      <button class="btn btn-sm btn-success">Approve</button>
+                    </form>
+                    <form method="post" action="{% url 'reject_requirement' req.id %}" class="d-inline">
+                      {% csrf_token %}
+                      <button class="btn btn-sm btn-outline-danger">Reject</button>
+                    </form>
+                  </div>
+                </li>
+              {% endif %}
+            {% empty %}
+              <li class="list-group-item">No pending suggestions.</li>
+            {% endfor %}
+          </ul>
         {% endif %}
     </div>
 </div>
+
+{% if event_has_passed and is_host and accepted_participants %}
+  <h5>Rate participants</h5>
+  <ul class="list-group">
+    {% for app in accepted_participants %}
+      <li class="list-group-item">
+        <div class="mb-2"><strong>{{ app.applicant.username }}</strong></div>
+        <form method="post" action="{% url 'rate_participant' hobby.id app.applicant.id %}" class="row g-2">
+          {% csrf_token %}
+          <div class="col-auto">
+            <select name="score" class="form-select form-select-sm">
+              {% for i in "12345" %}
+                <option value="{{ forloop.counter }}">{{ forloop.counter }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col">
+            <input type="text" name="comment" class="form-control form-control-sm" placeholder="Optional comment">
+          </div>
+          <div class="col-auto">
+            <button class="btn btn-outline-primary btn-sm">Save</button>
+          </div>
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
 {% endblock %}

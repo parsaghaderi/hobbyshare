@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import Avg
+from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -8,7 +9,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(blank=True)
     goal = models.CharField(max_length=255, blank=True)
-    image = models.ImageField(upload_to='profile_pics/', default='default.jpg', blank=True)
+    image = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
 
     def __str__(self):
         return f'{self.user.username} Profile'
@@ -49,6 +50,12 @@ class Hobby(models.Model):
     def __str__(self):
         return self.title
 
+    def has_ended(self):
+        return bool(self.date and timezone.now() > self.date)
+
+    def user_is_accepted(self, user):
+        return self.applications.filter(applicant=user, status='accepted').exists()
+
     def get_average_rating(self):
         return self.ratings.aggregate(Avg('score'))['score__avg'] or 0
 
@@ -60,12 +67,13 @@ class Requirement(models.Model):
     hobby = models.ForeignKey(Hobby, on_delete=models.CASCADE, related_name='requirements', null=True)
     name = models.CharField(max_length=255)
     provided_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='provided_requirements')
+    suggested_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='suggested_requirements')
+    is_approved = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        if self.hobby:
-            return f"{self.name} for {self.hobby.title}"
-        return f"{self.name} (No associated hobby)"
-
+        hobby_title = self.hobby.title if self.hobby else 'No hobby'
+        return f"{self.name} for {hobby_title}"
 
 class Application(models.Model):
     STATUS_CHOICES = [('pending', 'Pending'), ('accepted', 'Accepted'), ('rejected', 'Rejected')]
@@ -85,6 +93,8 @@ class Rating(models.Model):
     hobby = models.ForeignKey(Hobby, on_delete=models.CASCADE, related_name='ratings')
     rater = models.ForeignKey(User, on_delete=models.CASCADE)
     score = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    anonymous = models.BooleanField(default=True)
+    comment = models.TextField(blank=True)
 
     class Meta:
         unique_together = ('hobby', 'rater')
@@ -94,6 +104,7 @@ class ParticipantRating(models.Model):
     host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='given_ratings')
     participant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_ratings')
     score = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    comment = models.TextField(blank=True)
 
     class Meta:
         unique_together = ('hobby', 'host', 'participant')
