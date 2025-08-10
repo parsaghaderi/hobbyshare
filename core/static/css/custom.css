@@ -1,0 +1,96 @@
+/* Import a modern font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Lato:wght@400;700&display=swap');
+
+/* Define a vibrant color palette */
+:root {
+    --primary-color: #4A90E2; /* A vibrant blue */
+    --secondary-color: #50E3C2; /* A fresh mint green */
+    --background-color: #f8f9fa;
+    --surface-color: #FFFFFF;
+    --text-color: #333;
+    --heading-color: #2c3e50;
+    --border-color: #dee2e6;
+}
+
+body {
+    background-color: var(--background-color);
+    font-family: 'Lato', sans-serif;
+    color: var(--text-color);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
+    color: var(--heading-color);
+    font-weight: 600;
+}
+
+/* --- Component Styling --- */
+
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.card-header {
+    background-color: var(--surface-color);
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    border-radius: 25px;
+    padding: 10px 25px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #357ABD; /* A darker shade of primary */
+    border-color: #357ABD;
+}
+
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    border-radius: 25px;
+    padding: 5px 15px;
+    font-weight: 600;
+}
+
+.badge {
+    border-radius: 12px;
+    padding: 0.4em 0.8em;
+    font-weight: 600;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(74, 144, 226, 0.25);
+}
+
+/* Tagify custom styles */
+.tagify {
+    border-radius: 8px;
+}
+.tagify__tag {
+    background-color: var(--secondary-color);
+    color: white;
+    border-radius: 6px;
+}
+
+/* Profile image preview helper */
+.object-fit-cover { object-fit: cover; }

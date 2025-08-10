@@ -1,40 +1,25 @@
+# OS
+.DS_Store
+
 # Python
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
-*.pyc
+*.egg-info/
+*.log
+
+# Envs
+.env
+.env.*
+venv/
+.venv/
 
 # Django
-*.log
-*.pot
-*.pyc
-*.sqlite3
 db.sqlite3
-
-# Media uploads
-/media/
 media/
-core/media/
-core/static/
-core/__pycache__/
-core/migrations/
+staticfiles/
+collectstatic/
 
-# VSCode
-.vscode/
-
-# Environment
-venv/
-.env
-*.env
-
-# OS files
-.DS_Store
-
-# Backup files
-*.bak
-*.swp
-*.swo
-
-# Node/npm (if used)
+# Node (if any)
 node_modules/
