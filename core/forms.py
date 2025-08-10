@@ -21,6 +21,16 @@ class HobbyForm(forms.ModelForm):
         }
 
 class ProfileForm(forms.ModelForm):
+    remove_image = forms.BooleanField(required=False, label='Remove current picture')
+
     class Meta:
         model = Profile
         fields = ['bio', 'goal', 'image']
+        widgets = {
+            'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Tell others about yourself'}),
+            'goal': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'What are you looking to do?'}),
+            'image': forms.ClearableFileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
+        }
+        labels = {
+            'image': 'Profile picture',
+        }

@@ -1,3 +1,5 @@
+import os, uuid
+from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import Avg
@@ -5,11 +7,17 @@ from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+def profile_image_upload_to(instance, filename):
+    base, ext = os.path.splitext(filename)
+    ext = (ext or '.jpg').lower()
+    ts = timezone.now().strftime('%Y%m%d%H%M%S')
+    return f'profile_pics/{instance.user_id}/{ts}_{uuid.uuid4().hex}{ext}'
+
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(blank=True)
     goal = models.CharField(max_length=255, blank=True)
-    image = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+    image = models.ImageField(upload_to=profile_image_upload_to, blank=True, null=True)
 
     def __str__(self):
         return f'{self.user.username} Profile'

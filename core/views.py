@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.http import JsonResponse, HttpResponseForbidden
 from django.db import transaction
 from django.views.decorators.http import require_POST
+from django.contrib import messages
 import json
 
 def home(request):
@@ -282,26 +283,40 @@ def signup(request):
     return render(request, 'registration/signup.html', {'form': form})
 
 @login_required
-def user_profile(request):
-    """
-    Displays the profile page for the currently logged-in user.
-    """
-    return render(request, 'profile.html')
+def profile(request):
+    profile = request.user.profile
+    hosted_hobbies = Hobby.objects.filter(host=request.user).order_by('-date')
+    my_apps = (
+        Application.objects
+        .filter(applicant=request.user)
+        .select_related('hobby')
+        .order_by('-id')
+    )
+    return render(
+        request,
+        'profile.html',
+        {'profile': profile, 'hosted_hobbies': hosted_hobbies, 'my_apps': my_apps},
+    )
 
 @login_required
 def edit_profile(request):
-    """
-    Handles editing the user's profile.
-    """
-    profile, created = Profile.objects.get_or_create(user=request.user)
+    profile = request.user.profile
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
-            form.save()
+            remove = form.cleaned_data.get('remove_image')
+            new_file = request.FILES.get('image')
+            with transaction.atomic():
+                if (remove or new_file) and profile.image:
+                    profile.image.delete(save=False)
+                obj = form.save(commit=False)
+                if remove:
+                    obj.image = None
+                obj.save()
             return redirect('profile')
     else:
         form = ProfileForm(instance=profile)
-    return render(request, 'edit_profile.html', {'form': form})
+    return render(request, 'profile_edit.html', {'form': form, 'profile': profile})
 
 def owner_profile(request, user_id):
     owner = get_object_or_404(User, id=user_id)
