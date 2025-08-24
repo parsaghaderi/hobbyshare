@@ -3,8 +3,8 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Hobby, Category, Application, Profile, Rating, ParticipantRating, Tag, Requirement
-from .forms import HobbyForm, ProfileForm
+from .models import Hobby, Category, Application, Profile, Rating, ParticipantRating, Tag, Requirement, Supplier, SupplierItem
+from .forms import HobbyForm, ProfileForm, SupplierUserCreationForm
 from django.db.models import Count
 from django.utils import timezone
 from django.http import JsonResponse, HttpResponseForbidden
@@ -20,15 +20,29 @@ def home(request):
     """
     query = request.GET.get('q')
     category_id = request.GET.get('category')
+    province = request.GET.get('province')
+    city = request.GET.get('city')
+    neighbourhood = request.GET.get('neighbourhood')
     hobbies = Hobby.objects.all().order_by('-created_at')
 
     if query:
         hobbies = hobbies.filter(title__icontains=query)
     if category_id:
         hobbies = hobbies.filter(category_id=category_id)
+    if province:
+        hobbies = hobbies.filter(province__iexact=province)
+    if city:
+        hobbies = hobbies.filter(city__iexact=city)
+    if neighbourhood:
+        hobbies = hobbies.filter(neighbourhood__icontains=neighbourhood)
 
     categories = Category.objects.all()
-    context = {'hobbies': hobbies, 'categories': categories}
+    context = {
+        'hobbies': hobbies, 'categories': categories,
+        'province_selected': province,
+        'city_selected': city,
+        'neighbourhood_selected': neighbourhood,
+    }
     return render(request, 'home.html', context)
 
 def hobby_detail(request, hobby_id):
@@ -49,6 +63,18 @@ def hobby_detail(request, hobby_id):
     applications = hobby.applications.all() if is_host else None
     accepted_participants = hobby.applications.filter(status='accepted')
 
+    supplier_items = None
+    if is_host:
+        qs = SupplierItem.objects.select_related('supplier__user','category','tag').filter(
+            supplier__province__iexact=hobby.province or '',
+            supplier__city__iexact=hobby.city or '',
+            quantity__gt=0,
+            supplier__active=True
+        )
+        if hobby.neighbourhood:
+            qs = qs.filter(supplier__neighbourhood__iexact=hobby.neighbourhood)
+        supplier_items = qs[:50]
+
     context = {
         'hobby': hobby,
         'is_host': is_host,
@@ -58,6 +84,7 @@ def hobby_detail(request, hobby_id):
         'accepted_participants': accepted_participants,
         'event_has_passed': timezone.now() > hobby.date if hobby.date else False,
         'has_rated': has_rated,
+        'supplier_items': supplier_items,
     }
     return render(request, 'hobby_detail.html', context)
 
@@ -84,6 +111,10 @@ def create_hobby(request):
                 except (json.JSONDecodeError, IndexError, KeyError):
                     pass
 
+            # Location fields
+            hobby.province = form.cleaned_data.get('province') or ''
+            hobby.city = form.cleaned_data.get('city') or ''
+            hobby.neighbourhood = form.cleaned_data.get('neighbourhood') or ''
             hobby.save()
 
             tags_json = form.cleaned_data.get('tags')
@@ -98,22 +129,47 @@ def create_hobby(request):
                 except (json.JSONDecodeError, KeyError, TypeError):
                     pass
 
-            # Save requirements
+            # Save requirements (primary: JSON from hidden field; fallback: discrete form inputs)
             req_json = form.cleaned_data.get('requirements')
+            created_any = False
             if req_json:
                 try:
                     reqs = json.loads(req_json)
-                    for r in reqs:
-                        name = r.get('name')
-                        provided = r.get('provided', False)
-                        if name:
-                            Requirement.objects.create(
-                                hobby=hobby,
-                                name=name,
-                                provided_by=request.user if provided else None
-                            )
+                    if isinstance(reqs, list):
+                        for r in reqs:
+                            if not isinstance(r, dict):
+                                continue
+                            name = (r.get('name') or '').strip()
+                            provided = bool(r.get('provided'))
+                            if name:
+                                Requirement.objects.create(
+                                    hobby=hobby,
+                                    name=name,
+                                    provided_by=request.user if provided else None,
+                                    is_approved=True  # explicit for clarity
+                                )
+                                created_any = True
                 except json.JSONDecodeError:
                     pass
+
+            if not created_any:
+                # Fallback: look for array-style inputs (req_name[] / req_provided[])
+                names = request.POST.getlist('req_name[]')
+                provided_flags = request.POST.getlist('req_provided[]')
+                for idx, raw_name in enumerate(names):
+                    name = (raw_name or '').strip()
+                    if not name:
+                        continue
+                    provided = False
+                    if idx < len(provided_flags):
+                        flag = provided_flags[idx]
+                        provided = flag in ['on', 'true', '1', 'yes']
+                    Requirement.objects.create(
+                        hobby=hobby,
+                        name=name,
+                        provided_by=request.user if provided else None,
+                        is_approved=True
+                    )
 
             return redirect('hobby_detail', hobby_id=hobby.id)
     else:
@@ -269,7 +325,7 @@ def signup(request):
         return redirect('home')
 
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = SupplierUserCreationForm(request.POST)
         if form.is_valid():
             with transaction.atomic():
                 user = form.save()
@@ -278,7 +334,7 @@ def signup(request):
             login(request, user)
             return redirect('home')
     else:
-        form = UserCreationForm()
+        form = SupplierUserCreationForm()
 
     return render(request, 'registration/signup.html', {'form': form})
 
@@ -323,6 +379,91 @@ def owner_profile(request, user_id):
     hosted_hobbies = Hobby.objects.filter(host=owner)
     owner_tags = Tag.objects.filter(hobby__in=hosted_hobbies).distinct()
     return render(request, 'owner_profile.html', {'owner': owner, 'owner_tags': owner_tags})
+
+@login_required
+def supplier_dashboard(request):
+    """Dashboard for suppliers to manage inventory."""
+    if not hasattr(request.user, 'supplier'):
+        return redirect('home')
+    supplier = request.user.supplier
+    items = supplier.items.select_related('category','tag').all().order_by('-created_at')
+    categories = Category.objects.all()
+    tags = Tag.objects.all()
+    pending_requests = Requirement.objects.select_related('hobby','supplier_item').filter(
+        supplier_item__supplier=supplier, supplier_status='pending'
+    ).order_by('-supplier_requested_at')
+    recent_accepted = Requirement.objects.select_related('hobby','supplier_item').filter(
+        supplier_item__supplier=supplier, supplier_status='accepted'
+    ).order_by('-supplier_requested_at')[:10]
+    if request.method == 'POST':
+        name = (request.POST.get('name') or '').strip()
+        category_id = request.POST.get('category')
+        tag_id = request.POST.get('tag')
+        quantity = int(request.POST.get('quantity') or 1)
+        is_rental = request.POST.get('is_rental') == 'on'
+        price = request.POST.get('price') or '0'
+        image = request.FILES.get('image')
+        if name:
+            SupplierItem.objects.create(
+                supplier=supplier,
+                name=name,
+                category_id=category_id or None,
+                tag_id=tag_id or None,
+                quantity=quantity,
+                is_rental=is_rental,
+                price=price,
+                image=image
+            )
+            return redirect('supplier_dashboard')
+    return render(request, 'supplier_dashboard.html', {
+        'supplier': supplier,
+        'items': items,
+        'categories': categories,
+        'tags': tags,
+        'pending_requests': pending_requests,
+        'recent_accepted': recent_accepted,
+    })
+
+from django.views.decorators.http import require_GET
+from django.db.models import Q
+
+@login_required
+@require_GET
+def supplier_item_suggestions(request):
+    """Return JSON of supplier items matching provisional hobby details.
+    Params: province, city, neighbourhood, category (name), tags (comma separated names)
+    """
+    province = (request.GET.get('province') or '').strip()
+    city = (request.GET.get('city') or '').strip()
+    neighbourhood = (request.GET.get('neighbourhood') or '').strip()
+    category_name = (request.GET.get('category') or '').strip()
+    tag_names = [t.strip() for t in (request.GET.get('tags') or '').split(',') if t.strip()]
+
+    qs = SupplierItem.objects.select_related('supplier__user','category','tag','supplier')
+    if province: qs = qs.filter(supplier__province__iexact=province)
+    if city: qs = qs.filter(supplier__city__iexact=city)
+    if neighbourhood: qs = qs.filter(supplier__neighbourhood__iexact=neighbourhood)
+    if category_name:
+        cat_obj = Category.objects.filter(name__iexact=category_name).first()
+        if cat_obj:
+            qs = qs.filter(Q(category=cat_obj) | Q(tag__isnull=False))  # allow any tag, refined below
+    if tag_names:
+        existing_tags = Tag.objects.filter(name__in=tag_names)
+        qs = qs.filter(Q(tag__in=existing_tags) | Q(category__name__iexact=category_name))
+    qs = qs.filter(quantity__gt=0, supplier__active=True)[:25]
+    data = [
+        {
+            'id': item.id,
+            'name': item.name,
+            'is_rental': item.is_rental,
+            'price': str(item.price),
+            'quantity': item.quantity,
+            'category': item.category.name if item.category else None,
+            'tag': item.tag.name if item.tag else None,
+            'supplier': item.supplier.user.username,
+        } for item in qs
+    ]
+    return JsonResponse(data, safe=False)
 
 # --- API-style views for JavaScript ---
 
@@ -375,3 +516,53 @@ def delete_requirement(request, req_id):
     hobby_id = req.hobby_id
     req.delete()
     return redirect('hobby_detail', hobby_id=hobby_id)
+
+@login_required
+@require_POST
+def supplier_decide_requirement(request, req_id, decision):
+    req = get_object_or_404(Requirement, id=req_id, supplier_item__supplier__user=request.user)
+    if decision not in ['accepted','declined']:
+        return HttpResponseForbidden('Invalid decision')
+    if decision == 'accepted' and req.supplier_status != 'accepted':
+        item = req.supplier_item
+        if item and item.quantity > 0:
+            item.quantity -= 1
+            item.save()
+    req.supplier_status = decision
+    req.save()
+    messages.success(request, f'Request {decision}.')
+    return redirect('supplier_dashboard')
+
+@login_required
+@require_POST
+def host_link_supplier_item(request, req_id):
+    """Host links an approved requirement to a supplier item to request fulfillment."""
+    req = get_object_or_404(Requirement, id=req_id, hobby__host=request.user)
+    if not req.is_approved:
+        return redirect('hobby_detail', hobby_id=req.hobby_id)
+    if req.supplier_item:  # already linked
+        return redirect('hobby_detail', hobby_id=req.hobby_id)
+    item_id = request.POST.get('supplier_item_id')
+    if not item_id:
+        return redirect('hobby_detail', hobby_id=req.hobby_id)
+    try:
+        item = SupplierItem.objects.get(id=item_id)
+    except SupplierItem.DoesNotExist:
+        messages.error(request, 'Invalid supplier item.')
+        return redirect('hobby_detail', hobby_id=req.hobby_id)
+    # Location validation (province + city required; neighbourhood only if both have values)
+    def norm(s):
+        return (s or '').strip().lower()
+    if norm(req.hobby.province) != norm(item.supplier.province) or norm(req.hobby.city) != norm(item.supplier.city):
+        messages.error(request, 'Supplier item province/city mismatch.')
+        return redirect('hobby_detail', hobby_id=req.hobby_id)
+    if req.hobby.neighbourhood and item.supplier.neighbourhood and norm(req.hobby.neighbourhood) != norm(item.supplier.neighbourhood):
+        messages.error(request, 'Supplier item neighbourhood mismatch.')
+        return redirect('hobby_detail', hobby_id=req.hobby_id)
+    from django.utils import timezone as tz
+    req.supplier_item = item
+    req.supplier_status = 'pending'
+    req.supplier_requested_at = tz.now()
+    req.save()
+    messages.success(request, f'Request sent to supplier {item.supplier.user.username}.')
+    return redirect('hobby_detail', hobby_id=req.hobby_id)

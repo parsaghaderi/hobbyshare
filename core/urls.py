@@ -18,6 +18,7 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('user/<int:user_id>/', views.owner_profile, name='owner_profile'),
+    path('supplier/dashboard/', views.supplier_dashboard, name='supplier_dashboard'),
     path('requirement/<int:req_id>/claim/', views.claim_requirement, name='claim_requirement'),
     path('api/tags/', views.get_tags, name='get_tags'),
     path('api/categories/', views.get_categories, name='get_categories'),
@@ -28,4 +29,7 @@ urlpatterns = [
     path('hobby/<int:hobby_id>/requirements/add/', views.add_requirement, name='add_requirement'),
     path('requirement/<int:req_id>/update/', views.update_requirement, name='update_requirement'),
     path('requirement/<int:req_id>/delete/', views.delete_requirement, name='delete_requirement'),
+    path('api/supplier-item-suggestions/', views.supplier_item_suggestions, name='supplier_item_suggestions'),
+    path('supplier/requirement/<int:req_id>/<str:decision>/', views.supplier_decide_requirement, name='supplier_decide_requirement'),
+    path('hobby/requirement/<int:req_id>/link-supplier/', views.host_link_supplier_item, name='host_link_supplier_item'),
 ]

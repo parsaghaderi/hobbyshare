@@ -22,9 +22,16 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'profile' %}">Profile</a>
                         </li>
+                        {% if not user.supplier %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'create_hobby' %}">Post Hobby</a>
                         </li>
+                        {% endif %}
+                        {% if user.supplier %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'supplier_dashboard' %}">Supplier Dashboard</a>
+                        </li>
+                        {% endif %}
                         <li class="nav-item">
                             <form method="post" action="{% url 'logout' %}">
                                 {% csrf_token %}
@@ -44,10 +51,17 @@
         </div>
     </nav>
 
-    <main class="container my-5">
-        {% block content %}
-        {% endblock %}
-    </main>
+        <main class="container my-5">
+                {% if messages %}
+                    <div class="mb-3">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags|default:'info' }} py-2 mb-2">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% block content %}
+                {% endblock %}
+        </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -75,5 +89,6 @@
         };
     })();
     </script>
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>

@@ -53,6 +53,9 @@ class Hobby(models.Model):
     max_participants = models.PositiveIntegerField(default=10)
     date = models.DateTimeField()
     place = models.CharField(max_length=300)
+    province = models.CharField(max_length=100, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    neighbourhood = models.CharField(max_length=150, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -78,6 +81,13 @@ class Requirement(models.Model):
     suggested_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='suggested_requirements')
     is_approved = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    # New optional classification to enable supplier matching
+    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, blank=True, related_name='requirements')
+    tag = models.ForeignKey('Tag', on_delete=models.SET_NULL, null=True, blank=True, related_name='requirements')
+    # Supplier linkage
+    supplier_item = models.ForeignKey('SupplierItem', on_delete=models.SET_NULL, null=True, blank=True, related_name='requirements')
+    supplier_status = models.CharField(max_length=10, choices=[('pending','Pending'),('accepted','Accepted'),('declined','Declined')], default='pending')
+    supplier_requested_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         hobby_title = self.hobby.title if self.hobby else 'No hobby'
@@ -125,3 +135,35 @@ def create_user_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
+
+# Suppliers
+def supplier_item_image_upload(instance, filename):
+    base, ext = os.path.splitext(filename)
+    ext = (ext or '.jpg').lower()
+    ts = timezone.now().strftime('%Y%m%d%H%M%S')
+    return f'supplier_items/{instance.supplier.user_id}/{ts}_{uuid.uuid4().hex}{ext}'
+
+class Supplier(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='supplier')
+    province = models.CharField(max_length=100, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    neighbourhood = models.CharField(max_length=150, blank=True)
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Supplier {self.user.username}'
+
+class SupplierItem(models.Model):
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, related_name='items')
+    name = models.CharField(max_length=255)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='supplier_items')
+    tag = models.ForeignKey(Tag, on_delete=models.SET_NULL, null=True, blank=True, related_name='supplier_items')
+    quantity = models.PositiveIntegerField(default=1)
+    is_rental = models.BooleanField(default=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    image = models.ImageField(upload_to=supplier_item_image_upload, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.name} ({self.supplier.user.username})'

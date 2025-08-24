@@ -1,18 +1,19 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="text-center mb-5">
-    <h1 class="display-4">Find Your Next Passion</h1>
+    <h1 class="display-4">Share Your Hobbies</h1>
     <p class="lead text-muted">Browse hobbies hosted by people in your community or share one of your own.</p>
 </div>
 
 <!-- Search and Filter Form -->
 <div class="card p-4 mb-5">
     <form method="get" action="{% url 'home' %}" class="row g-3 align-items-center">
-        <div class="col-md-6">
+        <div class="col-md-4">
             <input type="text" name="q" class="form-control" placeholder="Search for hobbies..." value="{{ request.GET.q }}">
         </div>
-        <div class="col-md-4">
+        <div class="col-md-2">
             <select name="category" class="form-select">
                 <option value="">All Categories</option>
                 {% for category in categories %}
@@ -21,7 +22,20 @@
             </select>
         </div>
         <div class="col-md-2">
-            <button type="submit" class="btn btn-primary w-100">Search</button>
+            <select name="province" class="form-select" id="province-select">
+                <option value="">Province</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="city" class="form-select" id="city-select">
+                <option value="">City</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <input type="text" name="neighbourhood" class="form-control" placeholder="Neighbourhood" value="{{ request.GET.neighbourhood }}">
+        </div>
+        <div class="col-12 text-end">
+            <button type="submit" class="btn btn-primary">Search</button>
         </div>
     </form>
 </div>
@@ -37,6 +51,7 @@
             <div class="card-body">
                 <h5 class="card-title">{{ hobby.title }}</h5>
                 <p class="card-text text-muted">{{ hobby.description|truncatewords:20 }}</p>
+                <p class="small mb-1"><strong>Location:</strong> {{ hobby.city }}, {{ hobby.province }} {% if hobby.neighbourhood %} - {{ hobby.neighbourhood }}{% endif %}</p>
                 <span class="badge" style="background-color: var(--primary-color); color: white;">{{ hobby.category.name|default:"Uncategorized" }}</span>
             </div>
             <div class="card-footer bg-white border-top-0 text-center pb-3">
@@ -50,4 +65,14 @@
     </div>
     {% endfor %}
 </div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{% static 'js/canada_locations.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const provSel = document.getElementById('province-select');
+    const citySel = document.getElementById('city-select');
+    populateLocationSelectors(provSel, citySel, null, '{{ province_selected|default:"" }}', '{{ city_selected|default:"" }}');
+});
+</script>
 {% endblock %}

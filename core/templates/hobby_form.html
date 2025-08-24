@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 <!-- Tagify CSS -->
@@ -27,9 +28,19 @@
                         <div class="col-md-4 mb-3">{{ form.place.label_tag }} {{ form.place }}</div>
                     </div>
 
+                    <div class="row g-3">
+                        <div class="col-md-4 mb-3">{{ form.province.label_tag }} {{ form.province }}</div>
+                        <div class="col-md-4 mb-3">{{ form.city.label_tag }} {{ form.city }}</div>
+                        <div class="col-md-4 mb-3">{{ form.neighbourhood.label_tag }} {{ form.neighbourhood }}</div>
+                    </div>
+
                     <!-- Requirements Section -->
                     <div class="mb-4">
                         <label class="form-label fw-bold">Requirements (Optional)</label>
+                                                <div class="alert alert-info py-2" id="supplier-suggestions-box" style="display:none;">
+                                                    <strong>Suggested Items from Suppliers:</strong>
+                                                    <ul id="supplier-suggestions" class="mb-0 small"></ul>
+                                                </div>
                         <div id="requirements-list" class="mb-2"></div>
                         <button type="button" id="add-requirement" class="btn btn-sm btn-outline-secondary">Add Requirement</button>
                     </div>
@@ -89,10 +100,11 @@ document.addEventListener("DOMContentLoaded", function() {
     addReqBtn.addEventListener('click', () => {
         const reqRow = document.createElement('div');
         reqRow.classList.add('input-group', 'mb-2');
+        const index = reqList.querySelectorAll('.input-group').length; // used for array ordering
         reqRow.innerHTML = `
-            <input type="text" class="form-control requirement-name" placeholder="Requirement name (e.g., Tent)">
+            <input type="text" class="form-control requirement-name" name="req_name[]" placeholder="Requirement name (e.g., Tent)">
             <div class="input-group-text">
-                <input class="form-check-input mt-0 requirement-provided" type="checkbox" title="Check if you are providing this">
+                <input class="form-check-input mt-0 requirement-provided" name="req_provided[]" type="checkbox" title="Check if you are providing this">
                 <label class="ms-2">I'll provide</label>
             </div>
             <button type="button" class="btn btn-outline-danger remove-requirement">Remove</button>
@@ -117,6 +129,61 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         hiddenReqInput.value = JSON.stringify(requirements);
     });
+
+    // Live supplier suggestions
+    const suggestionsBox = document.getElementById('supplier-suggestions-box');
+    const suggestionsList = document.getElementById('supplier-suggestions');
+    let suggestionTimeout;
+    function fetchSuggestions(){
+        const province = document.getElementById('{{ form.province.id_for_label }}').value;
+        const city = document.getElementById('{{ form.city.id_for_label }}').value;
+        const neighbourhood = document.getElementById('{{ form.neighbourhood.id_for_label }}').value;
+        // Extract category name from Tagify (first tag)
+        let categoryName = '';
+        try { categoryName = JSON.parse(categoryInput.value)[0]?.value || ''; } catch(e){}
+        let tagNames = [];
+        try { tagNames = JSON.parse(tagsInput.value).map(t=>t.value); } catch(e){}
+        if(!province || !city || !neighbourhood || (!categoryName && tagNames.length===0)){
+            suggestionsBox.style.display='none';
+            return;
+        }
+        const params = new URLSearchParams({province,city,neighbourhood,category:categoryName,tags:tagNames.join(',')});
+        fetch('{% url "supplier_item_suggestions" %}?'+params.toString())
+          .then(r=>r.json())
+          .then(items => {
+              if(items.length===0){ suggestionsBox.style.display='none'; return; }
+              suggestionsList.innerHTML = '';
+              items.forEach(it => {
+                  const li = document.createElement('li');
+                  li.innerHTML = `<span class='fw-bold'>${it.name}</span> <span class='text-muted'>(${it.supplier}${it.tag? ' • '+it.tag:''}${it.category? ' • '+it.category:''})</span> <button type='button' class='btn btn-sm btn-link p-0 ms-2 add-suggest' data-name='${it.name}'>Add</button>`;
+                  suggestionsList.appendChild(li);
+              });
+              suggestionsBox.style.display='block';
+          }).catch(()=>{ suggestionsBox.style.display='none'; });
+    }
+    function schedule(){ clearTimeout(suggestionTimeout); suggestionTimeout=setTimeout(fetchSuggestions, 600); }
+    document.getElementById('{{ form.province.id_for_label }}').addEventListener('change', schedule);
+    document.getElementById('{{ form.city.id_for_label }}').addEventListener('change', schedule);
+    document.getElementById('{{ form.neighbourhood.id_for_label }}').addEventListener('input', schedule);
+    categoryInput.addEventListener('change', schedule);
+    tagsInput.addEventListener('change', schedule);
+    suggestionsList.addEventListener('click', e => {
+        if(e.target.classList.contains('add-suggest')){
+            const name = e.target.getAttribute('data-name');
+            const reqRow = document.createElement('div');
+            reqRow.classList.add('input-group', 'mb-2');
+            reqRow.innerHTML = `
+                <input type="text" class="form-control requirement-name" name="req_name[]" value="${name}" placeholder="Requirement name">
+                <div class="input-group-text">
+                    <input class="form-check-input mt-0 requirement-provided" name="req_provided[]" type="checkbox" title="Check if you are providing this">
+                    <label class="ms-2">I'll provide</label>
+                </div>
+                <button type="button" class="btn btn-outline-danger remove-requirement">Remove</button>`;
+            reqList.appendChild(reqRow);
+        }
+    });
+    // Initial fetch attempt after a short delay
+    setTimeout(fetchSuggestions, 1200);
 });
 </script>
 
@@ -141,4 +208,24 @@ document.addEventListener("DOMContentLoaded", function() {
         border: 1px solid #ced4da;
     }
 </style>
+<script src="{% static 'js/canada_locations.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const provInput = document.getElementById('{{ form.province.id_for_label }}');
+    const cityInput = document.getElementById('{{ form.city.id_for_label }}');
+    // Convert plain text inputs to selects for province and city
+    function upgradeToSelect(inputEl, placeholder){
+        const sel = document.createElement('select');
+        sel.name = inputEl.name;
+        sel.className = 'form-select';
+        sel.id = inputEl.id;
+        inputEl.replaceWith(sel);
+        return sel;
+    }
+    const provinceSelect = upgradeToSelect(provInput, 'Province');
+    const citySelect = upgradeToSelect(cityInput, 'City');
+    const neighInput = document.getElementById('{{ form.neighbourhood.id_for_label }}');
+    populateLocationSelectors(provinceSelect, citySelect, neighInput, provinceSelect.getAttribute('data-initial'), citySelect.getAttribute('data-initial'));
+});
+</script>
 {% endblock %}

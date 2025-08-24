@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="row">
@@ -6,9 +7,32 @@
         <div class="card">
             <div class="card-body">
                 <h2 class="card-title text-center">Create an Account</h2>
-                <form method="post" enctype="multipart/form-data">
+                <form method="post" enctype="multipart/form-data" id="signup-form">
                     {% csrf_token %}
-                    {{ form.as_p }}
+                    <p>{{ form.username.label_tag }} {{ form.username }}</p>
+                    <p>{{ form.password1.label_tag }} {{ form.password1 }}</p>
+                    <p>{{ form.password2.label_tag }} {{ form.password2 }}</p>
+                    <div class="form-check mb-2">
+                        {{ form.is_supplier }} {{ form.is_supplier.label_tag }}
+                    </div>
+                    <div id="supplier-fields" style="display:none;">
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <label>Province</label>
+                                <select name="province" id="id_province" class="form-control"></select>
+                            </div>
+                            <div class="col-md-4">
+                                <label>City</label>
+                                <select name="city" id="id_city" class="form-control"></select>
+                            </div>
+                            <div class="col-md-4">
+                                <label>Neighbourhood</label>
+                                <input type="text" name="neighbourhood" id="id_neighbourhood" class="form-control" placeholder="Neighbourhood" />
+                            </div>
+                        </div>
+                        <small class="text-muted">Location required for suppliers</small>
+                    </div>
+                    {% for field in form.hidden_fields %}{{ field }}{% endfor %}
                     <div class="d-grid">
                       <button type="submit" class="btn btn-primary">Sign Up</button>
                     </div>
@@ -24,4 +48,26 @@
     .card-body ul { list-style-type: none; padding: 0; }
     .card-body .helptext { font-size: 0.8rem; color: #6c757d; }
 </style>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="{% static 'js/canada_locations.js' %}"></script>
+  <script>
+  (function(){
+      const supplierCheckbox = document.getElementById('id_is_supplier');
+      if(!supplierCheckbox) return;
+      const supplierFields = document.getElementById('supplier-fields');
+      const provSel = document.getElementById('id_province');
+      const citySel = document.getElementById('id_city');
+      const neighInput = document.getElementById('id_neighbourhood');
+      function toggle(){
+          supplierFields.style.display = supplierCheckbox.checked ? 'block':'none';
+      }
+      supplierCheckbox.addEventListener('change', toggle);
+      toggle();
+      if(window.populateLocationSelectors){
+          populateLocationSelectors(provSel, citySel, neighInput, '', '');
+      }
+  })();
+  </script>
 {% endblock %}

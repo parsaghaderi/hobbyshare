@@ -85,6 +85,16 @@
               <li class="list-group-item d-flex align-items-center justify-content-between">
                 <div>
                   {{ req.name }}
+                  {% if req.supplier_item %}
+                    <span class="badge bg-info text-dark ms-2">Supplier: {{ req.supplier_item.supplier.user.username }}</span>
+                    {% if req.supplier_status == 'pending' %}
+                      <span class="badge bg-warning text-dark ms-1">Awaiting supplier</span>
+                    {% elif req.supplier_status == 'accepted' %}
+                      <span class="badge bg-success ms-1">Supplier confirmed</span>
+                    {% elif req.supplier_status == 'declined' %}
+                      <span class="badge bg-danger ms-1">Declined</span>
+                    {% endif %}
+                  {% endif %}
                   {% if req.provided_by %}
                     <span class="badge bg-success ms-2">
                       Provided by
@@ -106,6 +116,18 @@
                       {% if req.provided_by_id == user.id %}Unclaim{% else %}Claim{% endif %}
                     </button>
                   </form>
+                  {% if not req.supplier_item and supplier_items %}
+                  <form method="post" action="{% url 'host_link_supplier_item' req.id %}" class="d-flex me-2" style="max-width:260px;">
+                    {% csrf_token %}
+                    <select name="supplier_item_id" class="form-select form-select-sm">
+                      <option value="">Supplier item...</option>
+                      {% for it in supplier_items %}
+                        <option value="{{ it.id }}">{{ it.name }} ({{ it.supplier.user.username }})</option>
+                      {% endfor %}
+                    </select>
+                    <button class="btn btn-sm btn-outline-success ms-1">Request</button>
+                  </form>
+                  {% endif %}
                   {% elif user.is_authenticated and user_application and user_application.status == 'accepted' %}
                  <form method="post" action="{% url 'claim_requirement' req.id %}" class="me-2">
                    {% csrf_token %}
@@ -186,6 +208,16 @@
                     <li class="list-group-item d-flex align-items-center justify-content-between">
                       <div>
                         {{ req.name }}
+                        {% if req.supplier_item %}
+                          <span class="badge bg-info text-dark ms-2">Supplier: {{ req.supplier_item.supplier.user.username }}</span>
+                          {% if req.supplier_status == 'pending' %}
+                            <span class="badge bg-warning text-dark ms-1">Awaiting supplier</span>
+                          {% elif req.supplier_status == 'accepted' %}
+                            <span class="badge bg-success ms-1">Supplier confirmed</span>
+                          {% elif req.supplier_status == 'declined' %}
+                            <span class="badge bg-danger ms-1">Declined</span>
+                          {% endif %}
+                        {% endif %}
                         {% if req.provided_by %}
                           <span class="badge bg-success ms-2">
                             Provided by {% if req.provided_by_id == user.id %}you{% else %}{{ req.provided_by.username }}{% endif %}
@@ -202,6 +234,18 @@
                               {% if req.provided_by_id == user.id %}Unclaim{% else %}Claim{% endif %}
                             </button>
                           </form>
+                          {% if not req.supplier_item and supplier_items %}
+                          <form method="post" action="{% url 'host_link_supplier_item' req.id %}" class="d-flex me-2" style="max-width:260px;">
+                            {% csrf_token %}
+                            <select name="supplier_item_id" class="form-select form-select-sm">
+                              <option value="">Supplier item...</option>
+                              {% for it in supplier_items %}
+                                <option value="{{ it.id }}">{{ it.name }} ({{ it.supplier.user.username }})</option>
+                              {% endfor %}
+                            </select>
+                            <button class="btn btn-sm btn-outline-success ms-1">Request</button>
+                          </form>
+                          {% endif %}
                           <form method="post" action="{% url 'update_requirement' req.id %}" class="d-flex me-2">
                             {% csrf_token %}
                             <input type="text" name="name" value="{{ req.name }}" class="form-control form-control-sm" style="max-width: 220px;">

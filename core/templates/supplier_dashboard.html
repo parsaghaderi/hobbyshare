@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<h2>Supplier Dashboard</h2>
+<p class="text-muted">Manage your inventory items and requirement requests.</p>
+{% if pending_requests %}
+  <div class="alert alert-info"><strong>{{ pending_requests|length }}</strong> pending requirement request{{ pending_requests|length|pluralize }}.</div>
+{% endif %}
+<div class="row">
+  <div class="col-md-5">
+    <div class="card mb-4">
+      <div class="card-header">Add Item</div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="mb-2">
+            <label class="form-label">Name</label>
+            <input type="text" name="name" class="form-control" required>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col">
+              <label class="form-label">Category</label>
+              <select name="category" class="form-select">
+                <option value="">--</option>
+                {% for c in categories %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col">
+              <label class="form-label">Tag</label>
+              <select name="tag" class="form-select">
+                <option value="">--</option>
+                {% for t in tags %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col">
+              <label class="form-label">Quantity</label>
+              <input type="number" min="1" name="quantity" value="1" class="form-control">
+            </div>
+            <div class="col">
+              <label class="form-label">Price</label>
+              <input type="number" min="0" step="0.01" name="price" value="0" class="form-control">
+            </div>
+          </div>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="is_rental" id="id_is_rental" checked>
+            <label for="id_is_rental" class="form-check-label">Rental Item?</label>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Image</label>
+            <input type="file" name="image" accept="image/*" class="form-control">
+          </div>
+          <button class="btn btn-primary w-100" type="submit">Add Item</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-7">
+    <div class="card mb-4">
+      <div class="card-header">Inventory ({{ items|length }})</div>
+      <ul class="list-group list-group-flush">
+        {% if not items %}
+          <li class="list-group-item text-muted">No items yet.</li>
+        {% endif %}
+        {% for item in items %}
+          <li class="list-group-item d-flex align-items-center">
+            {% if item.image %}
+              <img src="{{ item.image.url }}" alt="" style="height:48px;width:48px;object-fit:cover;border-radius:4px;margin-right:12px;">
+            {% else %}
+              <div style="height:48px;width:48px;background:#e9ecef;border-radius:4px;margin-right:12px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#666;">No Img</div>
+            {% endif %}
+            <div class="flex-grow-1">
+              <strong>{{ item.name }}</strong>
+              <div class="text-muted" style="font-size:0.8rem;">
+                {% if item.category %}{{ item.category.name }}{% endif %}{% if item.tag %} • {{ item.tag.name }}{% endif %} • Qty {{ item.quantity }} • {{ item.is_rental|yesno:"Rental,For Sale" }} • ${{ item.price }}
+              </div>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Pending Requests</span>
+        <span class="badge bg-secondary">{{ pending_requests|length }}</span>
+      </div>
+      <ul class="list-group list-group-flush">
+        {% if not pending_requests %}<li class="list-group-item text-muted">None pending.</li>{% endif %}
+        {% for req in pending_requests %}
+          <li class="list-group-item">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <strong>{{ req.name }}</strong> <span class="text-muted" style="font-size:0.8rem;">for <a href="{% url 'hobby_detail' req.hobby.id %}">{{ req.hobby.title }}</a></span><br>
+                <span class="badge bg-warning text-dark">Awaiting decision</span>
+                {% if req.supplier_requested_at %}<span class="text-muted" style="font-size:0.7rem;">requested {{ req.supplier_requested_at|timesince }} ago</span>{% endif %}
+              </div>
+              <div class="ms-2 d-flex gap-2">
+                <form method="post" action="{% url 'supplier_decide_requirement' req.id 'accepted' %}">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-success">Accept</button>
+                </form>
+                <form method="post" action="{% url 'supplier_decide_requirement' req.id 'declined' %}">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-outline-danger">Decline</button>
+                </form>
+              </div>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header">Recently Accepted</div>
+      <ul class="list-group list-group-flush">
+        {% if not recent_accepted %}<li class="list-group-item text-muted">None yet.</li>{% endif %}
+        {% for req in recent_accepted %}
+          <li class="list-group-item">
+            <strong>{{ req.name }}</strong> for <a href="{% url 'hobby_detail' req.hobby.id %}">{{ req.hobby.title }}</a>
+            <span class="badge bg-success ms-2">Accepted</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
