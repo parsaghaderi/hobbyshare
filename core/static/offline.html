@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Offline | Share A Hobby</title>
+  <link rel="stylesheet" href="/static/css/custom.css">
+  <style>
+    body { display:flex; min-height:100vh; align-items:center; justify-content:center; font-family: system-ui, Arial, sans-serif; }
+    .card { max-width:440px; padding:2rem; background:#fff; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,.08); }
+    h1 { font-size:1.4rem; margin-bottom:.75rem; }
+    p { color:#555; }
+    button { background:#0d6efd; color:#fff; border:none; padding:.65rem 1rem; border-radius:6px; cursor:pointer; }
+  </style>
+  <meta name="theme-color" content="#0d6efd">
+</head>
+<body>
+  <div class="card">
+    <h1>You are offline</h1>
+    <p>The network connection appears to be unavailable. Content you visited before may still load. Reconnect and refresh to get the latest hobbies.</p>
+    <button onclick="location.reload()">Retry</button>
+  </div>
+</body>
+</html>
