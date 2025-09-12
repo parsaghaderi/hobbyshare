@@ -76,6 +76,7 @@ def hobby_detail(request, pk):
     upcoming_events = []
     past_events = []
     
+    # This check is now safer and handles None/NULL values correctly.
     if hobby.recurrence and hobby.recurrence != 'none':
         intervals = {
             'daily': relativedelta(days=1),
@@ -86,9 +87,10 @@ def hobby_detail(request, pk):
         }
         interval = intervals.get(hobby.recurrence)
         
+        # Ensure interval is not None before proceeding
         if interval:
             current_date = hobby.date
-            # Limit iterations to prevent infinite loops
+            # Limit iterations to prevent infinite loops with bad data
             for _ in range(104): 
                 if current_date < now:
                     past_events.append(current_date)
@@ -120,7 +122,7 @@ def hobby_detail(request, pk):
         'is_full': is_full,
         'upcoming_events': upcoming_events,
         'most_recent_past_event': past_events[-1] if past_events else None,
-        'now': now,  # <-- THIS LINE IS THE FIX
+        'now': now,
     }
     return render(request, 'core/hobby_detail.html', context)
 
