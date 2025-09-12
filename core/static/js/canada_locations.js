@@ -1,8 +1,6 @@
 // Minimal Canada locations dataset (can be expanded)
 // Structure: { provinceCode: { name: 'Ontario', cities: { 'Toronto': ['Downtown','Scarborough','North York','Etobicoke'], ... } } }
 window.CANADA_LOCATIONS = {
-  ON: { name: 'Ontario', cities: { 'Toronto': ['Downtown','Scarborough','North York','Etobicoke','York'], 'Ottawa': ['Centretown','Kanata','Nepean','Orleans'], 'Hamilton': ['Ancaster','Dundas','Stoney Creek'] } },
-  BC: { name: 'British Columbia', cities: { 'Vancouver': ['Downtown','Kitsilano','Gastown','Yaletown'], 'Victoria': ['Downtown','Oak Bay','James Bay'], 'Surrey': ['Guildford','Newton','Whalley'] } },
   QC: { name: 'Quebec', cities: { 'Montreal': ['Ahuntsic',
                                                 'Cartierville',
                                                 'Bois-de-Saraguay',
