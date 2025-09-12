@@ -2,6 +2,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
+from .views import about_page # Add this import
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -32,4 +33,5 @@ urlpatterns = [
     path('api/supplier-item-suggestions/', views.supplier_item_suggestions, name='supplier_item_suggestions'),
     path('supplier/requirement/<int:req_id>/<str:decision>/', views.supplier_decide_requirement, name='supplier_decide_requirement'),
     path('hobby/requirement/<int:req_id>/link-supplier/', views.host_link_supplier_item, name='host_link_supplier_item'),
+    path('about/', about_page, name='about'), # Add this line
 ]

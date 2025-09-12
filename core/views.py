@@ -566,3 +566,11 @@ def host_link_supplier_item(request, req_id):
     req.save()
     messages.success(request, f'Request sent to supplier {item.supplier.user.username}.')
     return redirect('hobby_detail', hobby_id=req.hobby_id)
+
+from django.shortcuts import render
+
+def about_page(request):
+    """
+    Renders the static 'About' page.
+    """
+    return render(request, 'core/about.html')
