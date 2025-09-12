@@ -356,24 +356,29 @@ def profile(request):
 
 @login_required
 def edit_profile(request):
+    # This line is the fix. It gets the profile or creates it if it's missing.
+    profile, created = Profile.objects.get_or_create(user=request.user)
+
     if request.method == 'POST':
         u_form = UserUpdateForm(request.POST, instance=request.user)
-        p_form = ProfileForm(request.POST, request.FILES, instance=request.user.profile)
+        # Use the 'profile' object we fetched above
+        p_form = ProfileForm(request.POST, request.FILES, instance=profile)
 
         if u_form.is_valid() and p_form.is_valid():
             u_form.save()
             p_form.save()
             messages.success(request, 'Your profile has been updated!')
             return redirect('profile')
-        else: # <-- THIS IS THE CRITICAL ADDITION
-            # If the form is invalid, print the errors to the log
+        else:
+            # This debugging code is still useful
             print("User form errors:", u_form.errors)
             print("Profile form errors:", p_form.errors)
             messages.error(request, 'Please correct the errors below.')
 
     else:
         u_form = UserUpdateForm(instance=request.user)
-        p_form = ProfileForm(instance=request.user.profile)
+        # Use the 'profile' object we fetched above
+        p_form = ProfileForm(instance=profile)
 
     context = {
         'u_form': u_form,
