@@ -75,7 +75,7 @@ class SupplierUserCreationForm(UserCreationForm):
 class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['username', 'email']
+        fields = ['username']
 
 
 class ProfileUpdateForm(forms.ModelForm):
