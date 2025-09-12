@@ -5,10 +5,10 @@
   <h2 class="mb-4">Your profile</h2>
   <div class="card">
     <div class="card-body d-flex align-items-center gap-3">
-      {% if profile.image %}
+      {% comment %} {% if profile.image %}
         <img src="{{ profile.image.url }}?v={{ profile.image.name|urlencode }}" alt="Profile"
              class="rounded-circle object-fit-cover border" style="width:96px;height:96px;">
-      {% else %}
+      {% else %} {% endcomment %}
         <div class="text-muted">No profile picture</div>
       {% endif %}
       <div>

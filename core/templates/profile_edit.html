@@ -10,7 +10,7 @@
         {% csrf_token %}
 
         <div class="col-12 d-flex align-items-center gap-3">
-          {% if profile.image %}
+          {% comment %} {% if profile.image %}
             <img
               src="{{ profile.image.url }}?v={{ profile.image.name|urlencode }}"
               alt="Current picture"
@@ -19,23 +19,23 @@
             >
           {% else %}
             <div class="text-muted">No profile picture</div>
-          {% endif %}
+          {% endif %} {% endcomment %}
         </div>
 
         <div class="col-12">
           <label class="form-label">Profile picture</label>
-          {{ form.image }}
+          {% comment %} {{ form.image }}
           {% if form.image.errors %}
             <div class="text-danger small">{{ form.image.errors }}</div>
-          {% endif %}
+          {% endif %} {% endcomment %}
         </div>
 
-        {% if profile.image %}
+        {% comment %} {% if profile.image %}
         <div class="col-12 form-check">
           {{ form.remove_image }}
           <label class="form-check-label" for="{{ form.remove_image.id_for_label }}">Remove current picture</label>
         </div>
-        {% endif %}
+        {% endif %} {% endcomment %}
 
         <div class="col-12">
           <label class="form-label">Bio</label>
