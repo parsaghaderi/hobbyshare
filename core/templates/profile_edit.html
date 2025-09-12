@@ -9,33 +9,11 @@
       <form method="post" enctype="multipart/form-data" class="row g-4">
         {% csrf_token %}
 
-        <div class="col-12 d-flex align-items-center gap-3">
-          {% comment %} {% if profile.image %}
-            <img
-              src="{{ profile.image.url }}?v={{ profile.image.name|urlencode }}"
-              alt="Current picture"
-              class="rounded-circle object-fit-cover border"
-              style="width: 96px; height: 96px;"
-            >
-          {% else %}
-            <div class="text-muted">No profile picture</div>
-          {% endif %} {% endcomment %}
-        </div>
+        
 
-        <div class="col-12">
-          <label class="form-label">Profile picture</label>
-          {% comment %} {{ form.image }}
-          {% if form.image.errors %}
-            <div class="text-danger small">{{ form.image.errors }}</div>
-          {% endif %} {% endcomment %}
-        </div>
+        
 
-        {% comment %} {% if profile.image %}
-        <div class="col-12 form-check">
-          {{ form.remove_image }}
-          <label class="form-check-label" for="{{ form.remove_image.id_for_label }}">Remove current picture</label>
-        </div>
-        {% endif %} {% endcomment %}
+        
 
         <div class="col-12">
           <label class="form-label">Bio</label>
