@@ -356,26 +356,30 @@ def profile(request):
 
 @login_required
 def edit_profile(request):
-    profile = request.user.profile
     if request.method == 'POST':
-        form = ProfileForm(request.POST, request.FILES, instance=profile)
         u_form = UserUpdateForm(request.POST, instance=request.user)
-        if form.is_valid() and u_form.is_valid():
-            remove = form.cleaned_data.get('remove_image')
-            new_file = request.FILES.get('image')
-            with transaction.atomic():
-                if (remove or new_file) and profile.image:
-                    profile.image.delete(save=False)
-                obj = form.save(commit=False)
-                if remove:
-                    obj.image = None
-                obj.save()
-                u_form.save()
+        p_form = ProfileForm(request.POST, request.FILES, instance=request.user.profile)
+
+        if u_form.is_valid() and p_form.is_valid():
+            u_form.save()
+            p_form.save()
+            messages.success(request, 'Your profile has been updated!')
             return redirect('profile')
+        else: # <-- THIS IS THE CRITICAL ADDITION
+            # If the form is invalid, print the errors to the log
+            print("User form errors:", u_form.errors)
+            print("Profile form errors:", p_form.errors)
+            messages.error(request, 'Please correct the errors below.')
+
     else:
-        form = ProfileForm(instance=profile)
         u_form = UserUpdateForm(instance=request.user)
-    return render(request, 'profile_edit.html', {'form': form, 'profile': profile, 'u_form': u_form})
+        p_form = ProfileForm(instance=request.user.profile)
+
+    context = {
+        'u_form': u_form,
+        'p_form': p_form
+    }
+    return render(request, 'core/edit_profile.html', context)
 
 def owner_profile(request, user_id):
     owner = get_object_or_404(User, id=user_id)
