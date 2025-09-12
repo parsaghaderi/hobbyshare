@@ -566,3 +566,26 @@ def host_link_supplier_item(request, req_id):
     req.save()
     messages.success(request, f'Request sent to supplier {item.supplier.user.username}.')
     return redirect('hobby_detail', hobby_id=req.hobby_id)
+
+def get_neighbourhoods(request):
+    """
+    Returns distinct neighbourhoods from existing hobbies, optionally filtered by province and city.
+    """
+    province = request.GET.get('province', '')
+    city = request.GET.get('city', '')
+    
+    queryset = Hobby.objects.all()
+    if province:
+        queryset = queryset.filter(province=province)
+    if city:
+        queryset = queryset.filter(city=city)
+    
+    neighbourhoods = (
+        queryset.exclude(neighbourhood__isnull=True)
+                .exclude(neighbourhood__exact='')
+                .values_list('neighbourhood', flat=True)
+                .distinct()
+                .order_by('neighbourhood')
+    )
+    
+    return JsonResponse({'neighbourhoods': list(neighbourhoods)})

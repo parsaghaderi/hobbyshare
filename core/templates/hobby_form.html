@@ -210,35 +210,45 @@ document.addEventListener("DOMContentLoaded", function() {
 </style>
 <script src="{% static 'js/canada_locations.js' %}"></script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const provInput = document.getElementById('{{ form.province.id_for_label }}');
-    const cityInput = document.getElementById('{{ form.city.id_for_label }}');
-    // Convert plain text inputs to selects for province and city
-    function upgradeToSelect(inputEl, placeholder){
-        const sel = document.createElement('select');
-        sel.name = inputEl.name;
-        sel.className = 'form-select';
-        sel.id = inputEl.id;
-        // Preserve initial value for form editing
-        sel.setAttribute('data-initial', inputEl.value);
-        inputEl.replaceWith(sel);
-        return sel;
+document.addEventListener('DOMContentLoaded', function() {
+    function fetchSuggestions(){
+        const province = document.getElementById('{{ form.province.id_for_label }}').value;
+        const city = document.getElementById('{{ form.city.id_for_label }}').value;
+        const neighbourhood = document.getElementById('{{ form.neighbourhood.id_for_label }}').value;
+        
+        // Fetch neighbourhoods based on province and city
+        if (province && city) {
+            fetch(`/api/neighbourhoods/?province=${encodeURIComponent(province)}&city=${encodeURIComponent(city)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const neighbourhoodSelect = document.getElementById('{{ form.neighbourhood.id_for_label }}');
+                    const currentValue = neighbourhoodSelect.value;
+                    
+                    // Clear existing options
+                    neighbourhoodSelect.innerHTML = '<option value="">Select neighbourhood</option>';
+                    
+                    // Add new options
+                    data.neighbourhoods.forEach(neighbourhood => {
+                        const option = document.createElement('option');
+                        option.value = neighbourhood;
+                        option.textContent = neighbourhood;
+                        neighbourhoodSelect.appendChild(option);
+                    });
+                    
+                    // Restore selected value if it still exists
+                    if (currentValue && data.neighbourhoods.includes(currentValue)) {
+                        neighbourhoodSelect.value = currentValue;
+                    }
+                });
+        }
     }
-    const provinceSelect = upgradeToSelect(provInput, 'Province');
-    const citySelect = upgradeToSelect(cityInput, 'City');
-    const neighInput = document.getElementById('{{ form.neighbourhood.id_for_label }}');
-
-    // Upgrade the neighbourhood input to a select element
-    const neighbourhoodSelect = upgradeToSelect(neighInput, 'Neighbourhood');
-
-    populateLocationSelectors(
-        provinceSelect,
-        citySelect,
-        neighbourhoodSelect, // Pass the new select element
-        provinceSelect.getAttribute('data-initial'),
-        citySelect.getAttribute('data-initial'),
-        neighbourhoodSelect.getAttribute('data-initial') // Pass its initial value
-    );
+    
+    // Add event listeners for province and city changes
+    document.getElementById('{{ form.province.id_for_label }}').addEventListener('change', fetchSuggestions);
+    document.getElementById('{{ form.city.id_for_label }}').addEventListener('change', fetchSuggestions);
+    
+    // Initial fetch on page load
+    setTimeout(fetchSuggestions, 1200);
 });
 </script>
 {% endblock %}
