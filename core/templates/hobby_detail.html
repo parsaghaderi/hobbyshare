@@ -24,7 +24,31 @@
                 <p class="card-text">{{ hobby.description }}</p>
 
                 <ul class="list-group list-group-flush mt-4">
-                    <li class="list-group-item"><strong>Date & Time:</strong> {{ hobby.date|date:"F d, Y, P" }}</li>
+                    {% if hobby.recurrence != 'none' %}
+                    <li class="list-group-item"><strong>Recurs:</strong> {{ hobby.get_recurrence_display }} starting {{ hobby.date|date:"F d, Y" }}</li>
+                    
+                    {% if upcoming_events %}
+                        <li class="list-group-item"><strong>Next 3 Occurrences:</strong>
+                            <ul class="list-unstyled mt-2">
+                            {% for event_date in upcoming_events %}
+                                <li>{{ event_date|date:"F d, Y, P" }}</li>
+                            {% endfor %}
+                            </ul>
+                        </li>
+                    {% endif %}
+
+                    {% if most_recent_past_event %}
+                        <li class="list-group-item text-muted"><strong>Last Event:</strong> {{ most_recent_past_event|date:"F d, Y, P" }} (Past)</li>
+                    {% endif %}
+
+                    {% else %}
+                        <li class="list-group-item"><strong>Date & Time:</strong> 
+                            {{ hobby.date|date:"F d, Y, P" }}
+                            {% if hobby.date < now %}
+                                <span class="badge bg-secondary ms-2">Past Event</span>
+                            {% endif %}
+                        </li>
+                    {% endif %}
                     <li class="list-group-item"><strong>Location:</strong> {{ hobby.place }}</li>
                     <li class="list-group-item"><strong>Host Rating:</strong> {{ hobby.get_average_rating|floatformat:1 }} / 5.0 ⭐</li>
                 </ul>

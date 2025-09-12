@@ -50,6 +50,15 @@ class Tag(models.Model):
 
 
 class Hobby(models.Model):
+    RECURRENCE_CHOICES = [
+        ('none', 'None (One-time event)'),
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('biweekly', 'Bi-weekly'),
+        ('monthly', 'Monthly'),
+        ('yearly', 'Yearly'),
+    ]
+
     host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='hosted_hobbies')
     title = models.CharField(max_length=200)
     description = models.TextField()
@@ -58,7 +67,8 @@ class Hobby(models.Model):
     image = models.ImageField(upload_to='hobby_images/', null=True, blank=True)  # added
     max_participants = models.PositiveIntegerField(default=10)
     date = models.DateTimeField()
-    place = models.CharField(max_length=300)
+    place = models.CharField(max_length=200)
+    recurrence = models.CharField(max_length=10, choices=RECURRENCE_CHOICES, default='none')
     province = models.CharField(max_length=100, blank=True)
     city = models.CharField(max_length=100, blank=True)
     neighbourhood = models.CharField(max_length=150, blank=True)

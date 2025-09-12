@@ -4,28 +4,23 @@ from django.contrib.auth.models import User
 from .models import Hobby, Profile, Supplier
 
 class HobbyForm(forms.ModelForm):
-    category = forms.CharField(
-        required=False,
-        help_text="Enter a category for your hobby."
-    )
-    tags = forms.CharField(
-        required=False,
-        help_text="Enter tags separated by commas."
-    )
-    province = forms.CharField(required=False)
-    city = forms.CharField(required=False)
-    neighbourhood = forms.CharField(required=False, label='Neighbourhood')
-    requirements = forms.CharField(widget=forms.HiddenInput(), required=False)  # added
-
     class Meta:
         model = Hobby
-        fields = [
-            'title', 'description', 'image', 'max_participants', 'date',
-            'place', 'province', 'city', 'neighbourhood'
-        ]
+        fields = ['title', 'description', 'image', 'category', 'tags', 'max_participants', 'date', 'recurrence', 'place', 'province', 'city', 'neighbourhood', 'requirements']
         widgets = {
-            'description': forms.Textarea(attrs={'rows': 4}),
-            'date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'category': forms.TextInput(attrs={'class': 'form-control'}),
+            'tags': forms.TextInput(attrs={'class': 'form-control'}),
+            'max_participants': forms.NumberInput(attrs={'class': 'form-control'}),
+            'date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'recurrence': forms.Select(attrs={'class': 'form-select'}),
+            'place': forms.TextInput(attrs={'class': 'form-control'}),
+            'province': forms.TextInput(attrs={'class': 'form-control'}),
+            'city': forms.TextInput(attrs={'class': 'form-control'}),
+            'neighbourhood': forms.TextInput(attrs={'class': 'form-control'}),
+            'requirements': forms.HiddenInput(),
         }
 
 class ProfileForm(forms.ModelForm):

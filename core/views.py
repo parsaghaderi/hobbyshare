@@ -12,6 +12,8 @@ from django.db import transaction
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 import json
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 def home(request):
     """
@@ -45,11 +47,8 @@ def home(request):
     }
     return render(request, 'home.html', context)
 
-def hobby_detail(request, hobby_id):
-    """
-    Displays the detailed view for a single hobby.
-    """
-    hobby = get_object_or_404(Hobby, id=hobby_id)
+def hobby_detail(request, pk):
+    hobby = get_object_or_404(Hobby, pk=pk)
     is_host = request.user == hobby.host
     user_application = None
     if request.user.is_authenticated:
@@ -75,6 +74,43 @@ def hobby_detail(request, hobby_id):
             qs = qs.filter(supplier__neighbourhood__iexact=hobby.neighbourhood)
         supplier_items = qs[:50]
 
+    # --- Recurrence Logic ---
+    now = timezone.now()
+    upcoming_events = []
+    past_events = []
+    
+    if hobby.recurrence != 'none':
+        # Define recurrence intervals
+        intervals = {
+            'daily': relativedelta(days=1),
+            'weekly': relativedelta(weeks=1),
+            'biweekly': relativedelta(weeks=2),
+            'monthly': relativedelta(months=1),
+            'yearly': relatived(years=1),
+        }
+        interval = intervals.get(hobby.recurrence)
+        
+        # Generate a reasonable number of occurrences to check
+        current_date = hobby.date
+        for _ in range(104): # Check for up to 2 years for weekly events
+            if current_date < now:
+                past_events.append(current_date)
+            else:
+                if len(upcoming_events) < 3:
+                    upcoming_events.append(current_date)
+            
+            if len(upcoming_events) >= 3:
+                break # Stop once we have enough upcoming events
+            
+            current_date += interval
+    
+    # If it's a one-time event or all recurrences are in the past
+    if not upcoming_events and not past_events:
+        if hobby.date < now:
+            past_events.append(hobby.date)
+        else:
+            upcoming_events.append(hobby.date)
+
     context = {
         'hobby': hobby,
         'is_host': is_host,
@@ -85,6 +121,8 @@ def hobby_detail(request, hobby_id):
         'event_has_passed': timezone.now() > hobby.date if hobby.date else False,
         'has_rated': has_rated,
         'supplier_items': supplier_items,
+        'upcoming_events': upcoming_events,
+        'most_recent_past_event': past_events[-1] if past_events else None,
     }
     return render(request, 'hobby_detail.html', context)
 
