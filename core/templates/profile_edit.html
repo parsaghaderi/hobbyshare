@@ -9,19 +9,6 @@
       <form method="post" enctype="multipart/form-data" class="row g-4">
         {% csrf_token %}
 
-        <div class="col-12 d-flex align-items-center gap-3">
-          {% if profile.image %}
-            <img
-              src="{{ profile.image.url }}"
-              alt="Current picture"
-              class="rounded-circle object-fit-cover border"
-              style="width: 96px; height: 96px;"
-            >
-          {% else %}
-            <div class="text-muted">No profile picture</div>
-          {% endif %}
-        </div>
-
         {# These fields are for the User model #}
         <div class="col-md-6">
             <label class="form-label">Username</label>
@@ -40,13 +27,6 @@
             <div class="text-danger small">{{ p_form.image.errors }}</div>
           {% endif %}
         </div>
-
-        {% if profile.image %}
-        <div class="col-12 form-check">
-          {{ p_form.image-clear }} {# Use the correct widget name for clearing an image #}
-          <label class="form-check-label" for="{{ p_form.image-clear_id }}">Remove current picture</label>
-        </div>
-        {% endif %}
 
         <div class="col-12">
           <label class="form-label">Bio</label>
