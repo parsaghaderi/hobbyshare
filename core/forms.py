@@ -71,14 +71,3 @@ class SupplierUserCreationForm(UserCreationForm):
                 neighbourhood=self.cleaned_data.get('neighbourhood','')
             )
         return user
-
-class UserUpdateForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = ['username']
-
-
-class ProfileUpdateForm(forms.ModelForm):
-    class Meta:
-        model = Profile
-        fields = ['bio', 'goal', 'image']

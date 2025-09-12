@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Hobby, Category, Application, Profile, Rating, ParticipantRating, Tag, Requirement, Supplier, SupplierItem
-from .forms import HobbyForm, ProfileForm, SupplierUserCreationForm, UserUpdateForm
+from .forms import HobbyForm, ProfileForm, SupplierUserCreationForm
 from django.db.models import Count
 from django.utils import timezone
 from django.http import JsonResponse, HttpResponseForbidden
@@ -356,35 +356,23 @@ def profile(request):
 
 @login_required
 def edit_profile(request):
-    # This line is the fix. It gets the profile or creates it if it's missing.
-    profile, created = Profile.objects.get_or_create(user=request.user)
-
+    profile = request.user.profile
     if request.method == 'POST':
-        u_form = UserUpdateForm(request.POST, instance=request.user)
-        # Use the 'profile' object we fetched above
-        p_form = ProfileForm(request.POST, request.FILES, instance=profile)
-
-        if u_form.is_valid() and p_form.is_valid():
-            u_form.save()
-            p_form.save()
-            messages.success(request, 'Your profile has been updated!')
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            remove = form.cleaned_data.get('remove_image')
+            new_file = request.FILES.get('image')
+            with transaction.atomic():
+                if (remove or new_file) and profile.image:
+                    profile.image.delete(save=False)
+                obj = form.save(commit=False)
+                if remove:
+                    obj.image = None
+                obj.save()
             return redirect('profile')
-        else:
-            # This debugging code is still useful
-            print("User form errors:", u_form.errors)
-            print("Profile form errors:", p_form.errors)
-            messages.error(request, 'Please correct the errors below.')
-
     else:
-        u_form = UserUpdateForm(instance=request.user)
-        # Use the 'profile' object we fetched above
-        p_form = ProfileForm(instance=profile)
-
-    context = {
-        'u_form': u_form,
-        'p_form': p_form
-    }
-    return render(request, 'core/edit_profile.html', context)
+        form = ProfileForm(instance=profile)
+    return render(request, 'profile_edit.html', {'form': form, 'profile': profile})
 
 def owner_profile(request, user_id):
     owner = get_object_or_404(User, id=user_id)
