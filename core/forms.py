@@ -6,7 +6,7 @@ from .models import Hobby, Profile, Supplier
 class HobbyForm(forms.ModelForm):
     class Meta:
         model = Hobby
-        fields = ['title', 'description', 'image', 'category', 'tags', 'max_participants', 'date', 'recurrence', 'place', 'province', 'city', 'neighbourhood', 'requirements']
+        fields = ['title', 'description', 'image', 'category', 'tags', 'max_participants', 'date', 'recurrence', 'place', 'province', 'city', 'neighbourhood']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
@@ -20,7 +20,6 @@ class HobbyForm(forms.ModelForm):
             'province': forms.TextInput(attrs={'class': 'form-control'}),
             'city': forms.TextInput(attrs={'class': 'form-control'}),
             'neighbourhood': forms.TextInput(attrs={'class': 'form-control'}),
-            'requirements': forms.HiddenInput(),
         }
 
 class ProfileForm(forms.ModelForm):
