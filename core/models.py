@@ -6,6 +6,8 @@ from django.db.models import Avg
 from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from PIL import Image # Make sure PIL/Pillow is installed
+from django.dispatch import receiver
 
 def profile_image_upload_to(instance, filename):
     base, ext = os.path.splitext(filename)
@@ -21,6 +23,23 @@ class Profile(models.Model):
 
     def __str__(self):
         return f'{self.user.username} Profile'
+
+    # Add this save method to resize images
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if self.image and hasattr(self.image, 'path'):
+            try:
+                img = Image.open(self.image.path)
+
+                # Resize logic
+                if img.height > 300 or img.width > 300:
+                    output_size = (300, 300)
+                    img.thumbnail(output_size)
+                    img.save(self.image.path)
+            except (IOError, FileNotFoundError):
+                # Ignore if file is missing or corrupt
+                pass
 
     def get_host_rating(self):
         ratings = Rating.objects.filter(hobby__host=self.user)
@@ -132,9 +151,10 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
 
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
+# This signal is redundant and causes a recursion error. It must be removed.
+# @receiver(post_save, sender=User)
+# def save_user_profile(sender, instance, **kwargs):
+#     instance.profile.save()
 
 # Suppliers
 def supplier_item_image_upload(instance, filename):
