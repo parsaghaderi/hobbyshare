@@ -211,34 +211,77 @@ document.addEventListener("DOMContentLoaded", function() {
 <script src="{% static 'js/canada_locations.js' %}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const provInput = document.getElementById('{{ form.province.id_for_label }}');
-    const cityInput = document.getElementById('{{ form.city.id_for_label }}');
-    // Convert plain text inputs to selects for province and city
-    function upgradeToSelect(inputEl, placeholder){
-        const sel = document.createElement('select');
-        sel.name = inputEl.name;
-        sel.className = 'form-select';
-        sel.id = inputEl.id;
-        // Preserve initial value for form editing
-        sel.setAttribute('data-initial', inputEl.value);
-        inputEl.replaceWith(sel);
-        return sel;
+    // This assumes your canada_locations.js file provides a global 'locations' variable.
+    if (typeof locations === 'undefined') {
+        console.error('Error: The locations data is not available.');
+        return;
     }
-    const provinceSelect = upgradeToSelect(provInput, 'Province');
-    const citySelect = upgradeToSelect(cityInput, 'City');
-    const neighInput = document.getElementById('{{ form.neighbourhood.id_for_label }}');
 
-    // Upgrade the neighbourhood input to a select element
-    const neighbourhoodSelect = upgradeToSelect(neighInput, 'Neighbourhood');
+    const provinceSelect = document.getElementById('{{ form.province.id_for_label }}');
+    const citySelect = document.getElementById('{{ form.city.id_for_label }}');
+    const neighbourhoodSelect = document.getElementById('{{ form.neighbourhood.id_for_label }}');
 
-    populateLocationSelectors(
-        provinceSelect, 
-        citySelect, 
-        neighbourhoodSelect, // Pass the new select element
-        provinceSelect.getAttribute('data-initial'), 
-        citySelect.getAttribute('data-initial'),
-        neighbourhoodSelect.getAttribute('data-initial') // Pass its initial value
-    );
+    const initialProvince = provinceSelect.value;
+    const initialCity = citySelect.value;
+    const initialNeighbourhood = neighbourhoodSelect.value;
+
+    function populateProvinces() {
+        provinceSelect.innerHTML = '<option value="">Select Province</option>';
+        for (const province in locations) {
+            const option = new Option(province, province);
+            provinceSelect.add(option);
+        }
+        if (initialProvince) {
+            provinceSelect.value = initialProvince;
+        }
+    }
+
+    function populateCities() {
+        const selectedProvince = provinceSelect.value;
+        citySelect.innerHTML = '<option value="">Select City</option>';
+        neighbourhoodSelect.innerHTML = '<option value="">Select Neighbourhood</option>'; // Clear neighbourhoods too
+
+        if (selectedProvince && locations[selectedProvince]) {
+            for (const city in locations[selectedProvince]) {
+                const option = new Option(city, city);
+                citySelect.add(option);
+            }
+        }
+        if (selectedProvince === initialProvince && initialCity) {
+            citySelect.value = initialCity;
+        }
+    }
+
+    function populateNeighbourhoods() {
+        const selectedProvince = provinceSelect.value;
+        const selectedCity = citySelect.value;
+        neighbourhoodSelect.innerHTML = '<option value="">Select Neighbourhood</option>';
+
+        if (selectedProvince && selectedCity && locations[selectedProvince][selectedCity]) {
+            const neighbourhoods = locations[selectedProvince][selectedCity];
+            if (Array.isArray(neighbourhoods) && neighbourhoods.length > 0) {
+                neighbourhoods.forEach(neighbourhood => {
+                    const option = new Option(neighbourhood, neighbourhood);
+                    neighbourhoodSelect.add(option);
+                });
+            }
+        }
+        if (selectedProvince === initialProvince && selectedCity === initialCity && initialNeighbourhood) {
+            neighbourhoodSelect.value = initialNeighbourhood;
+        }
+    }
+
+    // Add event listeners
+    provinceSelect.addEventListener('change', () => {
+        populateCities();
+        populateNeighbourhoods(); // Call this to ensure neighbourhood list is cleared/updated
+    });
+    citySelect.addEventListener('change', populateNeighbourhoods);
+
+    // Initial population
+    populateProvinces();
+    populateCities();
+    populateNeighbourhoods();
 });
 </script>
 {% endblock %}
