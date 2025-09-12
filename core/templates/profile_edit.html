@@ -12,7 +12,7 @@
         <div class="col-12 d-flex align-items-center gap-3">
           {% if profile.image %}
             <img
-              src="{{ profile.image.url }}?v={{ profile.image.name|urlencode }}"
+              src="{{ profile.image.url }}"
               alt="Current picture"
               class="rounded-circle object-fit-cover border"
               style="width: 96px; height: 96px;"
@@ -22,30 +22,40 @@
           {% endif %}
         </div>
 
+        {# These fields are for the User model #}
+        <div class="col-md-6">
+            <label class="form-label">Username</label>
+            {{ u_form.username }}
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Email</label>
+            {{ u_form.email }}
+        </div>
+
+        {# These fields are for the Profile model, using p_form #}
         <div class="col-12">
           <label class="form-label">Profile picture</label>
-          {{ form.image }}
-          {% if form.image.errors %}
-            <div class="text-danger small">{{ form.image.errors }}</div>
+          {{ p_form.image }}
+          {% if p_form.image.errors %}
+            <div class="text-danger small">{{ p_form.image.errors }}</div>
           {% endif %}
         </div>
 
         {% if profile.image %}
         <div class="col-12 form-check">
-          {{ form.remove_image }}
-          <label class="form-check-label" for="{{ form.remove_image.id_for_label }}">Remove current picture</label>
+          {{ p_form.image-clear }} {# Use the correct widget name for clearing an image #}
+          <label class="form-check-label" for="{{ p_form.image-clear_id }}">Remove current picture</label>
         </div>
         {% endif %}
 
         <div class="col-12">
           <label class="form-label">Bio</label>
-          {{ form.bio }}
+          {{ p_form.bio }}
         </div>
 
         <div class="col-12">
           <label class="form-label">Goal</label>
-          
-          {{ form.goal }}
+          {{ p_form.goal }}
         </div>
 
         <div class="col-12 d-flex gap-2">
