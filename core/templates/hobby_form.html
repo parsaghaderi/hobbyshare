@@ -8,51 +8,88 @@
 <div class="row justify-content-center">
     <div class="col-lg-8">
         <div class="card">
-            <div class="card-body p-4 p-md-5">
-                <h2 class="card-title text-center mb-4">Create a New Hobby</h2>
+            <div class="card-body">
+                <h2 class="card-title mb-4">{% if form.instance.pk %}Edit Hobby{% else %}Create a New Hobby{% endif %}</h2>
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
-                    
-                    <div class="mb-3">{{ form.title.label_tag }} {{ form.title }}</div>
-                    <div class="mb-3">{{ form.description.label_tag }} {{ form.description }}</div>
-                    <div class="mb-3">{{ form.image.label_tag }} {{ form.image }}</div>
-                    
+
+                    <!-- Display Non-Field and Global Errors -->
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        {{ form.title.label_tag }}
+                        {{ form.title }}
+                        {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors }}</div>{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.description.label_tag }}
+                        {{ form.description }}
+                        {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors }}</div>{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.image.label_tag }}
+                        {{ form.image }}
+                        {% if form.image.errors %}<div class="text-danger small mt-1">{{ form.image.errors }}</div>{% endif %}
+                    </div>
                     <div class="row g-3">
-                        <div class="col-md-6 mb-3">{{ form.category.label_tag }} {{ form.category }}</div>
-                        <div class="col-md-6 mb-3">{{ form.tags.label_tag }} {{ form.tags }}</div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.category.label_tag }}
+                            {{ form.category }}
+                            {% if form.category.errors %}<div class="text-danger small mt-1">{{ form.category.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.tags.label_tag }}
+                            {{ form.tags }}
+                            {% if form.tags.errors %}<div class="text-danger small mt-1">{{ form.tags.errors }}</div>{% endif %}
+                        </div>
                     </div>
-
                     <div class="row g-3">
-                        <div class="col-md-4 mb-3">{{ form.max_participants.label_tag }} {{ form.max_participants }}</div>
-                        <div class="col-md-4 mb-3">{{ form.date.label_tag }} {{ form.date }}</div>
-                        <div class="col-md-4 mb-3">{{ form.recurrence.label_tag }} {{ form.recurrence }}</div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.max_participants.label_tag }}
+                            {{ form.max_participants }}
+                            {% if form.max_participants.errors %}<div class="text-danger small mt-1">{{ form.max_participants.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.date.label_tag }}
+                            {{ form.date }}
+                            {% if form.date.errors %}<div class="text-danger small mt-1">{{ form.date.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.recurrence.label_tag }}
+                            {{ form.recurrence }}
+                            {% if form.recurrence.errors %}<div class="text-danger small mt-1">{{ form.recurrence.errors }}</div>{% endif %}
+                        </div>
                     </div>
-
                     <div class="row g-3">
-                        <div class="col-md-4 mb-3">{{ form.place.label_tag }} {{ form.place }}</div>
-                        <div class="col-md-4 mb-3">{{ form.province.label_tag }} {{ form.province }}</div>
-                        <div class="col-md-4 mb-3">{{ form.city.label_tag }} {{ form.city }}</div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.place.label_tag }}
+                            {{ form.place }}
+                            {% if form.place.errors %}<div class="text-danger small mt-1">{{ form.place.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.province.label_tag }}
+                            {{ form.province }}
+                            {% if form.province.errors %}<div class="text-danger small mt-1">{{ form.province.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.city.label_tag }}
+                            {{ form.city }}
+                            {% if form.city.errors %}<div class="text-danger small mt-1">{{ form.city.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.neighbourhood.label_tag }}
+                        {{ form.neighbourhood }}
+                        {% if form.neighbourhood.errors %}<div class="text-danger small mt-1">{{ form.neighbourhood.errors }}</div>{% endif %}
                     </div>
 
-                    <div class="row g-3">
-                        <div class="col-md-4 mb-3">{{ form.neighbourhood.label_tag }} {{ form.neighbourhood }}</div>
-                    </div>
-
-                    <!-- Requirements Section -->
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">Requirements (Optional)</label>
-                                                <div class="alert alert-info py-2" id="supplier-suggestions-box" style="display:none;">
-                                                    <strong>Suggested Items from Suppliers:</strong>
-                                                    <ul id="supplier-suggestions" class="mb-0 small"></ul>
-                                                </div>
-                        <div id="requirements-list" class="mb-2"></div>
-                        <button type="button" id="add-requirement" class="btn btn-sm btn-outline-secondary">Add Requirement</button>
-                    </div>
-                    {{ form.requirements }}
-
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">Post Hobby</button>
-                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Post Hobby</button>
                 </form>
             </div>
         </div>
