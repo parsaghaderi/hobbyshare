@@ -9,7 +9,7 @@ from django.dispatch import receiver
 from PIL import Image # Make sure PIL/Pillow is installed
 from django.dispatch import receiver
 
-def profile_image_upload_to(instance, filename):
+def profile_image_upload_to(instance, filename): #check later!!!
     base, ext = os.path.splitext(filename)
     ext = (ext or '.jpg').lower()
     ts = timezone.now().strftime('%Y%m%d%H%M%S')
@@ -19,7 +19,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(blank=True)
     goal = models.CharField(max_length=255, blank=True)
-    image = models.ImageField(upload_to=profile_image_upload_to, blank=True, null=True)
+    image = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
 
     def __str__(self):
         return f'{self.user.username} Profile'
