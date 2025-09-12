@@ -7,11 +7,6 @@ from .models import Hobby, Category, Application, Profile, Rating, ParticipantRa
 from .forms import HobbyForm, ProfileForm, SupplierUserCreationForm
 from django.db.models import Count
 from django.utils import timezone
-from django.http import JsonResponse, HttpResponseForbidden
-from django.db import transaction
-from django.views.decorators.http import require_POST
-from django.contrib import messages
-import json
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
@@ -79,52 +74,53 @@ def hobby_detail(request, pk):
     upcoming_events = []
     past_events = []
     
-    if hobby.recurrence != 'none':
-        # Define recurrence intervals
+    if hobby.recurrence and hobby.recurrence != 'none':
         intervals = {
             'daily': relativedelta(days=1),
             'weekly': relativedelta(weeks=1),
             'biweekly': relativedelta(weeks=2),
             'monthly': relativedelta(months=1),
-            'yearly': relatived(years=1),
+            'yearly': relativedelta(years=1),
         }
         interval = intervals.get(hobby.recurrence)
         
-        # Generate a reasonable number of occurrences to check
-        current_date = hobby.date
-        for _ in range(104): # Check for up to 2 years for weekly events
-            if current_date < now:
-                past_events.append(current_date)
-            else:
-                if len(upcoming_events) < 3:
-                    upcoming_events.append(current_date)
-            
-            if len(upcoming_events) >= 3:
-                break # Stop once we have enough upcoming events
-            
-            current_date += interval
+        if interval:
+            current_date = hobby.date
+            # Limit iterations to prevent infinite loops
+            for _ in range(104): 
+                if current_date < now:
+                    past_events.append(current_date)
+                else:
+                    if len(upcoming_events) < 3:
+                        upcoming_events.append(current_date)
+                
+                if len(upcoming_events) >= 3:
+                    break
+                
+                current_date += interval
     
-    # If it's a one-time event or all recurrences are in the past
+    # Fallback for one-time events or if no recurrences were calculated
     if not upcoming_events and not past_events:
         if hobby.date < now:
             past_events.append(hobby.date)
         else:
             upcoming_events.append(hobby.date)
 
+    # Get other context variables
+    is_host = request.user == hobby.host
+    has_applied = hobby.applications.filter(applicant=request.user).exists() if request.user.is_authenticated else False
+    is_full = hobby.applications.filter(status='accepted').count() >= hobby.max_participants
+    
     context = {
         'hobby': hobby,
         'is_host': is_host,
-        'user_application': user_application,
-        'contact_info': contact_info,
-        'applications': applications,
-        'accepted_participants': accepted_participants,
-        'event_has_passed': timezone.now() > hobby.date if hobby.date else False,
-        'has_rated': has_rated,
-        'supplier_items': supplier_items,
+        'has_applied': has_applied,
+        'is_full': is_full,
         'upcoming_events': upcoming_events,
         'most_recent_past_event': past_events[-1] if past_events else None,
+        'now': now,  # <-- THIS LINE IS THE FIX
     }
-    return render(request, 'hobby_detail.html', context)
+    return render(request, 'core/hobby_detail.html', context)
 
 @login_required
 def create_hobby(request):
