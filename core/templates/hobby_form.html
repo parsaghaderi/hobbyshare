@@ -219,13 +219,26 @@ document.addEventListener('DOMContentLoaded', () => {
         sel.name = inputEl.name;
         sel.className = 'form-select';
         sel.id = inputEl.id;
+        // Preserve initial value for form editing
+        sel.setAttribute('data-initial', inputEl.value);
         inputEl.replaceWith(sel);
         return sel;
     }
     const provinceSelect = upgradeToSelect(provInput, 'Province');
     const citySelect = upgradeToSelect(cityInput, 'City');
     const neighInput = document.getElementById('{{ form.neighbourhood.id_for_label }}');
-    populateLocationSelectors(provinceSelect, citySelect, neighInput, provinceSelect.getAttribute('data-initial'), citySelect.getAttribute('data-initial'));
+
+    // Upgrade the neighbourhood input to a select element
+    const neighbourhoodSelect = upgradeToSelect(neighInput, 'Neighbourhood');
+
+    populateLocationSelectors(
+        provinceSelect, 
+        citySelect, 
+        neighbourhoodSelect, // Pass the new select element
+        provinceSelect.getAttribute('data-initial'), 
+        citySelect.getAttribute('data-initial'),
+        neighbourhoodSelect.getAttribute('data-initial') // Pass its initial value
+    );
 });
 </script>
 {% endblock %}
