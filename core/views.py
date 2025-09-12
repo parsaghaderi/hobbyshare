@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Hobby, Category, Application, Profile, Rating, ParticipantRating, Tag, Requirement, Supplier, SupplierItem
-from .forms import HobbyForm, ProfileForm, SupplierUserCreationForm
+from .forms import HobbyForm, ProfileForm, SupplierUserCreationForm, UserUpdateForm
 from django.db.models import Count
 from django.utils import timezone
 from django.http import JsonResponse, HttpResponseForbidden
@@ -359,7 +359,8 @@ def edit_profile(request):
     profile = request.user.profile
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=profile)
-        if form.is_valid():
+        u_form = UserUpdateForm(request.POST, instance=request.user)
+        if form.is_valid() and u_form.is_valid():
             remove = form.cleaned_data.get('remove_image')
             new_file = request.FILES.get('image')
             with transaction.atomic():
@@ -369,10 +370,12 @@ def edit_profile(request):
                 if remove:
                     obj.image = None
                 obj.save()
+                u_form.save()
             return redirect('profile')
     else:
         form = ProfileForm(instance=profile)
-    return render(request, 'profile_edit.html', {'form': form, 'profile': profile})
+        u_form = UserUpdateForm(instance=request.user)
+    return render(request, 'profile_edit.html', {'form': form, 'profile': profile, 'u_form': u_form})
 
 def owner_profile(request, user_id):
     owner = get_object_or_404(User, id=user_id)
