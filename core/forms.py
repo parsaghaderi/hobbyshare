@@ -6,7 +6,7 @@ from .models import Hobby, Profile, Supplier
 class HobbyForm(forms.ModelForm):
     class Meta:
         model = Hobby
-        fields = ['title', 'description', 'image', 'category', 'tags', 'max_participants', 'date', 'recurrence', 'place', 'province', 'city', 'neighbourhood']
+        fields = ['title', 'description', 'image', 'category', 'tags', 'max_participants', 'date', 'place', 'province', 'city', 'neighbourhood']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
@@ -15,7 +15,6 @@ class HobbyForm(forms.ModelForm):
             'tags': forms.TextInput(attrs={'class': 'form-control'}),
             'max_participants': forms.NumberInput(attrs={'class': 'form-control'}),
             'date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
-            'recurrence': forms.Select(attrs={'class': 'form-select'}),
             'place': forms.TextInput(attrs={'class': 'form-control'}),
             'province': forms.TextInput(attrs={'class': 'form-control'}),
             'city': forms.TextInput(attrs={'class': 'form-control'}),

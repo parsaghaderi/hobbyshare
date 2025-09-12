@@ -9,8 +9,6 @@ from .models import Hobby, Category, Application, Profile, Rating, ParticipantRa
 from .forms import HobbyForm, ProfileForm, SupplierUserCreationForm
 from django.db.models import Count
 from django.utils import timezone
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
 
 def home(request):
     """
@@ -46,83 +44,20 @@ def home(request):
 
 def hobby_detail(request, pk):
     hobby = get_object_or_404(Hobby, pk=pk)
-    is_host = request.user == hobby.host
-    user_application = None
-    if request.user.is_authenticated:
-        user_application = hobby.applications.filter(applicant=request.user).first()
-
-    contact_info = None
-    if user_application and user_application.status == 'accepted':
-        contact_info = hobby.host.email or hobby.host.username
-
-    has_rated = Rating.objects.filter(hobby=hobby, rater=request.user).exists() if request.user.is_authenticated else False
-    applications = hobby.applications.all() if is_host else None
-    accepted_participants = hobby.applications.filter(status='accepted')
-
-    supplier_items = None
-    if is_host:
-        qs = SupplierItem.objects.select_related('supplier__user','category','tag').filter(
-            supplier__province__iexact=hobby.province or '',
-            supplier__city__iexact=hobby.city or '',
-            quantity__gt=0,
-            supplier__active=True
-        )
-        if hobby.neighbourhood:
-            qs = qs.filter(supplier__neighbourhood__iexact=hobby.neighbourhood)
-        supplier_items = qs[:50]
-
-    # --- Recurrence Logic ---
-    now = timezone.now()
-    upcoming_events = []
-    past_events = []
     
-    # This check is now safer and handles None/NULL values correctly.
-    if hobby.recurrence and hobby.recurrence != 'none':
-        intervals = {
-            'daily': relativedelta(days=1),
-            'weekly': relativedelta(weeks=1),
-            'biweekly': relativedelta(weeks=2),
-            'monthly': relativedelta(months=1),
-            'yearly': relativedelta(years=1),
-        }
-        interval = intervals.get(hobby.recurrence)
-        
-        # Ensure interval is not None before proceeding
-        if interval:
-            current_date = hobby.date
-            # Limit iterations to prevent infinite loops with bad data
-            for _ in range(104): 
-                if current_date < now:
-                    past_events.append(current_date)
-                else:
-                    if len(upcoming_events) < 3:
-                        upcoming_events.append(current_date)
-                
-                if len(upcoming_events) >= 3:
-                    break
-                
-                current_date += interval
-    
-    # Fallback for one-time events or if no recurrences were calculated
-    if not upcoming_events and not past_events:
-        if hobby.date < now:
-            past_events.append(hobby.date)
-        else:
-            upcoming_events.append(hobby.date)
-
-    # Get other context variables
+    # Revert to the simple context
     is_host = request.user == hobby.host
     has_applied = hobby.applications.filter(applicant=request.user).exists() if request.user.is_authenticated else False
     is_full = hobby.applications.filter(status='accepted').count() >= hobby.max_participants
-    
+    event_has_passed = hobby.date < timezone.now()
+
     context = {
         'hobby': hobby,
         'is_host': is_host,
         'has_applied': has_applied,
         'is_full': is_full,
-        'upcoming_events': upcoming_events,
-        'most_recent_past_event': past_events[-1] if past_events else None,
-        'now': now,
+        'event_has_passed': event_has_passed,
+        'accepted_participants': hobby.applications.filter(status='accepted'),
     }
     return render(request, 'core/hobby_detail.html', context)
 
