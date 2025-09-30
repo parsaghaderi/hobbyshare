@@ -52,10 +52,10 @@
           <div class="card-body">
             <h5 class="card-title">{{ hobby.title }}</h5>
             <p class="card-text text-muted">{{ hobby.description|truncatewords:20 }}</p>
-            <p class="small mb-1">
-              <strong>Location:</strong>
-              {{ hobby.city }}, {{ hobby.province }}{% if hobby.neighbourhood %} - {{ hobby.neighbourhood }}{% endif %}
-            </p>
+            
+            {# This is the line to fix #}
+            <p class="small mb-1"><strong>Location:</strong> {{ hobby.address }}</p>
+            
             {% if hobby.category %}
               <span class="badge" style="background-color:var(--primary-color);color:#fff;">
                 {{ hobby.category_name }}
