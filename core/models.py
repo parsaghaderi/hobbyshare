@@ -64,11 +64,8 @@ class Hobby(models.Model):
     image = models.ImageField(upload_to='hobby_images/', null=True, blank=True)
     max_participants = models.PositiveIntegerField(default=10)
 
-    # --- Add these location fields ---
-    province = models.CharField(max_length=100, blank=True)
-    city = models.CharField(max_length=100, blank=True)
-    neighbourhood = models.CharField(max_length=100, blank=True)
-    # --- End new fields ---
+    # --- Reverted to a single mandatory address field ---
+    address = models.CharField(max_length=255)
 
     start_datetime = models.DateTimeField(default=timezone.now)
     end_datetime = models.DateTimeField(null=True, blank=True, help_text="For recurring events, this is the end of the series. Leave blank for an ongoing event.")
@@ -78,7 +75,6 @@ class Hobby(models.Model):
         default=Recurrence.ONCE,
         help_text="How often the event repeats."
     )
-    # --- End New Fields ---
 
     def __str__(self):
         return self.title

@@ -6,11 +6,9 @@ from django.contrib.auth.models import User
 class HobbyForm(forms.ModelForm):
     class Meta:
         model = Hobby
-        # Replace 'date' and 'place' with the new fields.
-        # Add any other fields from the Hobby model that should be in the form.
         fields = [
             'title', 'description', 'category', 'image', 'max_participants',
-            'province', 'city', 'neighbourhood',
+            'address',  # Use the single address field
             'start_datetime', 'end_datetime', 'recurrence'
         ]
         widgets = {
