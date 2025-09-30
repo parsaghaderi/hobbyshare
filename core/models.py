@@ -79,6 +79,9 @@ class Hobby(models.Model):
     def get_participant_count(self):
         return self.applications.filter(status='accepted').count()
 
+    def category_name(self):
+        return self.category.name if self.category else "Uncategorized"
+
 
 class Requirement(models.Model):
     hobby = models.ForeignKey(Hobby, on_delete=models.CASCADE, related_name='requirements', null=True)
