@@ -24,16 +24,13 @@ def home(request):
 
     if not request.user.is_authenticated:
         static_preview = True
-
-        # Static teaser items (adjust text as you like)
         display_hobbies = [
             SimpleNamespace(
                 id=None,
                 title='Guitar Jam Circle',
                 description='Casual beginner-friendly acoustic jam and chord exchange.',
                 category=SimpleNamespace(name='Music'),
-                # --- This is the part to fix ---
-                address='Montreal, QC - Plateau',
+                address='Montreal, QC - Plateau',  # This must be 'address'
                 image=None
             ),
             SimpleNamespace(
@@ -41,8 +38,7 @@ def home(request):
                 title='Saturday Sketch Meetup',
                 description='Outdoor urban sketching session + quick critiques over coffee.',
                 category=SimpleNamespace(name='Art'),
-                # --- This is the part to fix ---
-                address='Toronto, ON - Kensington',
+                address='Toronto, ON - Kensington',  # This must be 'address'
                 image=None
             ),
             SimpleNamespace(
@@ -50,8 +46,7 @@ def home(request):
                 title='Trail Run & Stretch',
                 description='5K social trail run followed by guided cooldown stretching.',
                 category=SimpleNamespace(name='Outdoors'),
-                # --- This is the part to fix ---
-                address='Vancouver, BC - North Shore',
+                address='Vancouver, BC - North Shore',  # This must be 'address'
                 image=None
             ),
             SimpleNamespace(
@@ -59,7 +54,7 @@ def home(request):
                 title='Board Game Night',
                 description='Strategy & party games—bring a favorite or learn a new one.',
                 category=SimpleNamespace(name='Games'),
-                address='Calgary, AB - Beltline',
+                address='Calgary, AB - Beltline',  # This must be 'address'
                 image=None
             ),
             SimpleNamespace(
@@ -67,7 +62,7 @@ def home(request):
                 title='Intro to Bread Baking',
                 description='Hands-on artisan sourdough basics with shared starter.',
                 category=SimpleNamespace(name='Cooking'),
-                address='Ottawa, ON - Glebe',
+                address='Ottawa, ON - Glebe',  # This must be 'address'
                 image=None
             ),
             SimpleNamespace(
@@ -75,7 +70,7 @@ def home(request):
                 title='Community Photography Walk',
                 description='Golden hour photo walk—composition tips & friendly feedback.',
                 category=SimpleNamespace(name='Photography'),
-                address='Quebec City, QC - Old Town',
+                address='Quebec City, QC - Old Town',  # This must be 'address'
                 image=None
             ),
         ]
