@@ -64,14 +64,12 @@ class Hobby(models.Model):
     image = models.ImageField(upload_to='hobby_images/', null=True, blank=True)
     max_participants = models.PositiveIntegerField(default=10)
 
-    # Original event fields (exist in DB)
+    # Existing columns in DB:
     date = models.DateTimeField()
     place = models.CharField(max_length=300)
     province = models.CharField(max_length=100, blank=True)
     city = models.CharField(max_length=100, blank=True)
     neighbourhood = models.CharField(max_length=150, blank=True)
-
-    # Schedule fields already present in DB (add to model)
     start_datetime = models.DateTimeField(null=True, blank=True)
     end_datetime = models.DateTimeField(null=True, blank=True)
     recurrence = models.CharField(
@@ -82,12 +80,6 @@ class Hobby(models.Model):
 
     def __str__(self):
         return self.title
-
-    def is_full(self):
-        return self.get_participant_count() >= self.max_participants
-
-    def get_participant_count(self):
-        return self.applications.filter(status='accepted').count()
 
     def category_name(self):
         return self.category.name if self.category else "Uncategorized"

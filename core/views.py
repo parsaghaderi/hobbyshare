@@ -15,37 +15,19 @@ import json
 from types import SimpleNamespace
 
 def home(request):
-    query = request.GET.get('q')
-    category_id = request.GET.get('category')
-    province = request.GET.get('province')
-    city = request.GET.get('city')
-    neighbourhood = request.GET.get('neighbourhood')
-
-    hobbies = Hobby.objects.all().order_by('-created_at').select_related('category', 'host')
-
-    if query:
-        hobbies = hobbies.filter(title__icontains=query)
-    if category_id:
-        hobbies = hobbies.filter(category_id=category_id)
-    if province:
-        hobbies = hobbies.filter(province__iexact=province)
-    if city:
-        hobbies = hobbies.filter(city__iexact=city)
-    if neighbourhood:
-        hobbies = hobbies.filter(neighbourhood__icontains=neighbourhood)
-
-    categories = Category.objects.all()
+    hobbies = Hobby.objects.all().select_related('category','host').order_by('-date')
 
     static_preview = False
     display_hobbies = hobbies
 
     if not request.user.is_authenticated:
         static_preview = True
+        # Static preview objects use only fields template expects
         display_hobbies = [
             SimpleNamespace(
                 id=None,
                 title='Guitar Jam Circle',
-                description='Casual beginner-friendly acoustic jam and chord exchange.',
+                description='Casual beginner-friendly acoustic jam.',
                 category=SimpleNamespace(name='Music'),
                 city='Montreal', province='QC', neighbourhood='Plateau',
                 image=None
@@ -53,7 +35,7 @@ def home(request):
             SimpleNamespace(
                 id=None,
                 title='Saturday Sketch Meetup',
-                description='Outdoor urban sketching + critiques over coffee.',
+                description='Outdoor urban sketching + critiques.',
                 category=SimpleNamespace(name='Art'),
                 city='Toronto', province='ON', neighbourhood='Kensington',
                 image=None
@@ -61,7 +43,7 @@ def home(request):
             SimpleNamespace(
                 id=None,
                 title='Trail Run & Stretch',
-                description='5K social trail run plus cooldown stretching.',
+                description='5K social trail run & cooldown.',
                 category=SimpleNamespace(name='Outdoors'),
                 city='Vancouver', province='BC', neighbourhood='North Shore',
                 image=None
@@ -69,7 +51,7 @@ def home(request):
             SimpleNamespace(
                 id=None,
                 title='Board Game Night',
-                description='Strategy & party games—bring one or learn one.',
+                description='Strategy & party games—bring one!',
                 category=SimpleNamespace(name='Games'),
                 city='Calgary', province='AB', neighbourhood='Beltline',
                 image=None
@@ -77,7 +59,7 @@ def home(request):
             SimpleNamespace(
                 id=None,
                 title='Intro to Bread Baking',
-                description='Hands-on sourdough basics with shared starter.',
+                description='Hands-on sourdough basics.',
                 category=SimpleNamespace(name='Cooking'),
                 city='Ottawa', province='ON', neighbourhood='Glebe',
                 image=None
@@ -85,7 +67,7 @@ def home(request):
             SimpleNamespace(
                 id=None,
                 title='Community Photography Walk',
-                description='Golden hour photo walk & composition tips.',
+                description='Golden hour photo walk & tips.',
                 category=SimpleNamespace(name='Photography'),
                 city='Quebec City', province='QC', neighbourhood='Old Town',
                 image=None
@@ -95,12 +77,7 @@ def home(request):
     context = {
         'hobbies': hobbies,
         'display_hobbies': display_hobbies,
-        'categories': categories,
         'static_preview': static_preview,
-        'total_hobbies': hobbies.count(),
-        'province_selected': province,
-        'city_selected': city,
-        'neighbourhood_selected': neighbourhood,
     }
     return render(request, 'home.html', context)
 
