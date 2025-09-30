@@ -12,36 +12,71 @@ from django.db import transaction
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 import json
+from types import SimpleNamespace
 
 def home(request):
-    """
-    Displays the homepage with a list of all hobbies.
-    Supports filtering by search query and category.
-    """
-    query = request.GET.get('q')
-    category_id = request.GET.get('category')
-    province = request.GET.get('province')
-    city = request.GET.get('city')
-    neighbourhood = request.GET.get('neighbourhood')
-    hobbies = Hobby.objects.all().order_by('-created_at')
-
-    if query:
-        hobbies = hobbies.filter(title__icontains=query)
-    if category_id:
-        hobbies = hobbies.filter(category_id=category_id)
-    if province:
-        hobbies = hobbies.filter(province__iexact=province)
-    if city:
-        hobbies = hobbies.filter(city__iexact=city)
-    if neighbourhood:
-        hobbies = hobbies.filter(neighbourhood__icontains=neighbourhood)
-
+    from core.models import Hobby, Category  # if not already imported above
+    hobbies = Hobby.objects.all().select_related('category', 'owner').order_by('-id')
     categories = Category.objects.all()
+
+    static_preview = False
+    display_hobbies = hobbies  # default for authenticated users
+
+    if not request.user.is_authenticated:
+        static_preview = True
+
+        # Static teaser items (adjust text as you like)
+        display_hobbies = [
+            SimpleNamespace(
+                id=None,
+                title='Guitar Jam Circle',
+                description='Casual beginner-friendly acoustic jam and chord exchange.',
+                category=SimpleNamespace(name='Music'),
+                city='Montreal', province='QC', neighbourhood='Plateau', image=None
+            ),
+            SimpleNamespace(
+                id=None,
+                title='Saturday Sketch Meetup',
+                description='Outdoor urban sketching session + quick critiques over coffee.',
+                category=SimpleNamespace(name='Art'),
+                city='Toronto', province='ON', neighbourhood='Kensington', image=None
+            ),
+            SimpleNamespace(
+                id=None,
+                title='Trail Run & Stretch',
+                description='5K social trail run followed by guided cooldown stretching.',
+                category=SimpleNamespace(name='Outdoors'),
+                city='Vancouver', province='BC', neighbourhood='North Shore', image=None
+            ),
+            SimpleNamespace(
+                id=None,
+                title='Board Game Night',
+                description='Strategy & party games—bring a favorite or learn a new one.',
+                category=SimpleNamespace(name='Games'),
+                city='Calgary', province='AB', neighbourhood='Beltline', image=None
+            ),
+            SimpleNamespace(
+                id=None,
+                title='Intro to Bread Baking',
+                description='Hands-on artisan sourdough basics with shared starter.',
+                category=SimpleNamespace(name='Cooking'),
+                city='Ottawa', province='ON', neighbourhood='Glebe', image=None
+            ),
+            SimpleNamespace(
+                id=None,
+                title='Community Photography Walk',
+                description='Golden hour photo walk—composition tips & friendly feedback.',
+                category=SimpleNamespace(name='Photography'),
+                city='Quebec City', province='QC', neighbourhood='Old Town', image=None
+            ),
+        ]
+
     context = {
-        'hobbies': hobbies, 'categories': categories,
-        'province_selected': province,
-        'city_selected': city,
-        'neighbourhood_selected': neighbourhood,
+        'hobbies': hobbies,              # full queryset (unused by anon preview)
+        'display_hobbies': display_hobbies,
+        'categories': categories,
+        'static_preview': static_preview,
+        'total_hobbies': hobbies.count(),
     }
     return render(request, 'home.html', context)
 
