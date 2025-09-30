@@ -50,6 +50,12 @@ class Tag(models.Model):
 
 
 class Hobby(models.Model):
+    class Recurrence(models.TextChoices):
+        ONCE = 'ONCE', 'Once'
+        WEEKLY = 'WEEKLY', 'Weekly'
+        BIWEEKLY = 'BIWEEKLY', 'Bi-weekly'
+        MONTHLY = 'MONTHLY', 'Monthly'
+
     host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='hosted_hobbies')
     title = models.CharField(max_length=200)
     description = models.TextField()
@@ -57,12 +63,17 @@ class Hobby(models.Model):
     tags = models.ManyToManyField(Tag, blank=True)
     image = models.ImageField(upload_to='hobby_images/', null=True, blank=True)  # added
     max_participants = models.PositiveIntegerField(default=10)
-    date = models.DateTimeField()
-    place = models.CharField(max_length=300)
-    province = models.CharField(max_length=100, blank=True)
-    city = models.CharField(max_length=100, blank=True)
-    neighbourhood = models.CharField(max_length=150, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+
+    # --- New Scheduling Fields ---
+    start_datetime = models.DateTimeField(default=timezone.now)
+    end_datetime = models.DateTimeField(null=True, blank=True, help_text="For recurring events, this is the end of the series. Leave blank for an ongoing event.")
+    recurrence = models.CharField(
+        max_length=10,
+        choices=Recurrence.choices,
+        default=Recurrence.ONCE,
+        help_text="How often the event repeats."
+    )
+    # --- End New Fields ---
 
     def __str__(self):
         return self.title

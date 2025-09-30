@@ -153,6 +153,30 @@
             </div>
           </form>
         {% endif %}
+
+        <!-- Event Schedule -->
+        <div class="card-body">
+            <h5 class="card-title">Event Schedule</h5>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <strong>Starts:</strong> {{ hobby.start_datetime|date:"F j, Y, P" }}
+                </li>
+                {% if hobby.recurrence != 'ONCE' %}
+                <li class="list-group-item">
+                    <strong>Repeats:</strong> {{ hobby.get_recurrence_display }}
+                </li>
+                {% endif %}
+                {% if hobby.end_datetime %}
+                <li class="list-group-item">
+                    <strong>Ends:</strong> {{ hobby.end_datetime|date:"F j, Y, P" }}
+                </li>
+                {% elif hobby.recurrence != 'ONCE' %}
+                <li class="list-group-item">
+                    <strong>Ends:</strong> Ongoing
+                </li>
+                {% endif %}
+            </ul>
+        </div>
     </div>
 
     <!-- Sidebar Column -->
