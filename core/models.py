@@ -50,12 +50,6 @@ class Tag(models.Model):
 
 
 class Hobby(models.Model):
-    class Recurrence(models.TextChoices):
-        ONCE = 'ONCE', 'Once'
-        WEEKLY = 'WEEKLY', 'Weekly'
-        BIWEEKLY = 'BIWEEKLY', 'Bi-weekly'
-        MONTHLY = 'MONTHLY', 'Monthly'
-
     host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='hosted_hobbies')
     title = models.CharField(max_length=200)
     description = models.TextField()
@@ -64,29 +58,19 @@ class Hobby(models.Model):
     image = models.ImageField(upload_to='hobby_images/', null=True, blank=True)
     max_participants = models.PositiveIntegerField(default=10)
 
-    # --- Reverted to a single mandatory address field ---
-    address = models.CharField(max_length=255)
-
-    start_datetime = models.DateTimeField(default=timezone.now)
-    end_datetime = models.DateTimeField(null=True, blank=True, help_text="For recurring events, this is the end of the series. Leave blank for an ongoing event.")
-    recurrence = models.CharField(
-        max_length=10,
-        choices=Recurrence.choices,
-        default=Recurrence.ONCE,
-        help_text="How often the event repeats."
-    )
+    # ORIGINAL location & scheduling fields (restore)
+    date = models.DateTimeField()
+    place = models.CharField(max_length=300)
+    province = models.CharField(max_length=100, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    neighbourhood = models.CharField(max_length=150, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
 
-    def has_ended(self):
-        return bool(self.date and timezone.now() > self.date)
-
-    def user_is_accepted(self, user):
-        return self.applications.filter(applicant=user, status='accepted').exists()
-
-    def get_average_rating(self):
-        return self.ratings.aggregate(Avg('score'))['score__avg'] or 0
+    def is_full(self):
+        return self.get_participant_count() >= self.max_participants
 
     def get_participant_count(self):
         return self.applications.filter(status='accepted').count()

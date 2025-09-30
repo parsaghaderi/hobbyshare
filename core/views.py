@@ -15,12 +15,29 @@ import json
 from types import SimpleNamespace
 
 def home(request):
-    from core.models import Hobby, Category  # if not already imported above
-    hobbies = Hobby.objects.all().select_related('category', 'host').order_by('-id') # Changed 'owner' to 'host'
+    query = request.GET.get('q')
+    category_id = request.GET.get('category')
+    province = request.GET.get('province')
+    city = request.GET.get('city')
+    neighbourhood = request.GET.get('neighbourhood')
+
+    hobbies = Hobby.objects.all().order_by('-created_at').select_related('category', 'host')
+
+    if query:
+        hobbies = hobbies.filter(title__icontains=query)
+    if category_id:
+        hobbies = hobbies.filter(category_id=category_id)
+    if province:
+        hobbies = hobbies.filter(province__iexact=province)
+    if city:
+        hobbies = hobbies.filter(city__iexact=city)
+    if neighbourhood:
+        hobbies = hobbies.filter(neighbourhood__icontains=neighbourhood)
+
     categories = Category.objects.all()
 
     static_preview = False
-    display_hobbies = hobbies  # default for authenticated users
+    display_hobbies = hobbies
 
     if not request.user.is_authenticated:
         static_preview = True
@@ -30,57 +47,60 @@ def home(request):
                 title='Guitar Jam Circle',
                 description='Casual beginner-friendly acoustic jam and chord exchange.',
                 category=SimpleNamespace(name='Music'),
-                address='Montreal, QC - Plateau',  # This must be 'address'
+                city='Montreal', province='QC', neighbourhood='Plateau',
                 image=None
             ),
             SimpleNamespace(
                 id=None,
                 title='Saturday Sketch Meetup',
-                description='Outdoor urban sketching session + quick critiques over coffee.',
+                description='Outdoor urban sketching + critiques over coffee.',
                 category=SimpleNamespace(name='Art'),
-                address='Toronto, ON - Kensington',  # This must be 'address'
+                city='Toronto', province='ON', neighbourhood='Kensington',
                 image=None
             ),
             SimpleNamespace(
                 id=None,
                 title='Trail Run & Stretch',
-                description='5K social trail run followed by guided cooldown stretching.',
+                description='5K social trail run plus cooldown stretching.',
                 category=SimpleNamespace(name='Outdoors'),
-                address='Vancouver, BC - North Shore',  # This must be 'address'
+                city='Vancouver', province='BC', neighbourhood='North Shore',
                 image=None
             ),
             SimpleNamespace(
                 id=None,
                 title='Board Game Night',
-                description='Strategy & party games—bring a favorite or learn a new one.',
+                description='Strategy & party games—bring one or learn one.',
                 category=SimpleNamespace(name='Games'),
-                address='Calgary, AB - Beltline',  # This must be 'address'
+                city='Calgary', province='AB', neighbourhood='Beltline',
                 image=None
             ),
             SimpleNamespace(
                 id=None,
                 title='Intro to Bread Baking',
-                description='Hands-on artisan sourdough basics with shared starter.',
+                description='Hands-on sourdough basics with shared starter.',
                 category=SimpleNamespace(name='Cooking'),
-                address='Ottawa, ON - Glebe',  # This must be 'address'
+                city='Ottawa', province='ON', neighbourhood='Glebe',
                 image=None
             ),
             SimpleNamespace(
                 id=None,
                 title='Community Photography Walk',
-                description='Golden hour photo walk—composition tips & friendly feedback.',
+                description='Golden hour photo walk & composition tips.',
                 category=SimpleNamespace(name='Photography'),
-                address='Quebec City, QC - Old Town',  # This must be 'address'
+                city='Quebec City', province='QC', neighbourhood='Old Town',
                 image=None
             ),
         ]
 
     context = {
-        'hobbies': hobbies,              # full queryset (unused by anon preview)
+        'hobbies': hobbies,
         'display_hobbies': display_hobbies,
         'categories': categories,
         'static_preview': static_preview,
         'total_hobbies': hobbies.count(),
+        'province_selected': province,
+        'city_selected': city,
+        'neighbourhood_selected': neighbourhood,
     }
     return render(request, 'home.html', context)
 
