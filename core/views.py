@@ -32,42 +32,51 @@ def home(request):
                 title='Guitar Jam Circle',
                 description='Casual beginner-friendly acoustic jam and chord exchange.',
                 category=SimpleNamespace(name='Music'),
-                city='Montreal', province='QC', neighbourhood='Plateau', image=None
+                # --- This is the part to fix ---
+                address='Montreal, QC - Plateau',
+                image=None
             ),
             SimpleNamespace(
                 id=None,
                 title='Saturday Sketch Meetup',
                 description='Outdoor urban sketching session + quick critiques over coffee.',
                 category=SimpleNamespace(name='Art'),
-                city='Toronto', province='ON', neighbourhood='Kensington', image=None
+                # --- This is the part to fix ---
+                address='Toronto, ON - Kensington',
+                image=None
             ),
             SimpleNamespace(
                 id=None,
                 title='Trail Run & Stretch',
                 description='5K social trail run followed by guided cooldown stretching.',
                 category=SimpleNamespace(name='Outdoors'),
-                city='Vancouver', province='BC', neighbourhood='North Shore', image=None
+                # --- This is the part to fix ---
+                address='Vancouver, BC - North Shore',
+                image=None
             ),
             SimpleNamespace(
                 id=None,
                 title='Board Game Night',
                 description='Strategy & party games—bring a favorite or learn a new one.',
                 category=SimpleNamespace(name='Games'),
-                city='Calgary', province='AB', neighbourhood='Beltline', image=None
+                address='Calgary, AB - Beltline',
+                image=None
             ),
             SimpleNamespace(
                 id=None,
                 title='Intro to Bread Baking',
                 description='Hands-on artisan sourdough basics with shared starter.',
                 category=SimpleNamespace(name='Cooking'),
-                city='Ottawa', province='ON', neighbourhood='Glebe', image=None
+                address='Ottawa, ON - Glebe',
+                image=None
             ),
             SimpleNamespace(
                 id=None,
                 title='Community Photography Walk',
                 description='Golden hour photo walk—composition tips & friendly feedback.',
                 category=SimpleNamespace(name='Photography'),
-                city='Quebec City', province='QC', neighbourhood='Old Town', image=None
+                address='Quebec City, QC - Old Town',
+                image=None
             ),
         ]
 
