@@ -16,7 +16,7 @@ from types import SimpleNamespace
 
 def home(request):
     from core.models import Hobby, Category  # if not already imported above
-    hobbies = Hobby.objects.all().select_related('category', 'owner').order_by('-id')
+    hobbies = Hobby.objects.all().select_related('category', 'host').order_by('-id') # Changed 'owner' to 'host'
     categories = Category.objects.all()
 
     static_preview = False
