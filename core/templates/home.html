@@ -56,9 +56,15 @@
               <strong>Location:</strong>
               {{ hobby.city }}, {{ hobby.province }}{% if hobby.neighbourhood %} - {{ hobby.neighbourhood }}{% endif %}
             </p>
-            <span class="badge" style="background-color:var(--primary-color);color:#fff;">
-              {{ hobby.category.name|default:"Uncategorized" }}
-            </span>
+            {% if hobby.category %}
+              <span class="badge" style="background-color:var(--primary-color);color:#fff;">
+                {{ hobby.category.name }}
+              </span>
+            {% else %}
+              <span class="badge" style="background-color:var(--primary-color);color:#fff;">
+                Uncategorized
+              </span>
+            {% endif %}
           </div>
           <div class="card-footer bg-white border-top-0 text-center pb-3">
             {% if static_preview %}
