@@ -61,10 +61,15 @@ class Hobby(models.Model):
     description = models.TextField()
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     tags = models.ManyToManyField(Tag, blank=True)
-    image = models.ImageField(upload_to='hobby_images/', null=True, blank=True)  # added
+    image = models.ImageField(upload_to='hobby_images/', null=True, blank=True)
     max_participants = models.PositiveIntegerField(default=10)
 
-    # --- New Scheduling Fields ---
+    # --- Add these location fields ---
+    province = models.CharField(max_length=100, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    neighbourhood = models.CharField(max_length=100, blank=True)
+    # --- End new fields ---
+
     start_datetime = models.DateTimeField(default=timezone.now)
     end_datetime = models.DateTimeField(null=True, blank=True, help_text="For recurring events, this is the end of the series. Leave blank for an ongoing event.")
     recurrence = models.CharField(
