@@ -50,6 +50,12 @@ class Tag(models.Model):
 
 
 class Hobby(models.Model):
+    class Recurrence(models.TextChoices):
+        ONCE = 'ONCE', 'Once'
+        WEEKLY = 'WEEKLY', 'Weekly'
+        BIWEEKLY = 'BIWEEKLY', 'Bi-weekly'
+        MONTHLY = 'MONTHLY', 'Monthly'
+
     host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='hosted_hobbies')
     title = models.CharField(max_length=200)
     description = models.TextField()
@@ -58,13 +64,21 @@ class Hobby(models.Model):
     image = models.ImageField(upload_to='hobby_images/', null=True, blank=True)
     max_participants = models.PositiveIntegerField(default=10)
 
-    # ORIGINAL location & scheduling fields (restore)
+    # Original event fields (exist in DB)
     date = models.DateTimeField()
     place = models.CharField(max_length=300)
     province = models.CharField(max_length=100, blank=True)
     city = models.CharField(max_length=100, blank=True)
     neighbourhood = models.CharField(max_length=150, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+
+    # Schedule fields already present in DB (add to model)
+    start_datetime = models.DateTimeField(null=True, blank=True)
+    end_datetime = models.DateTimeField(null=True, blank=True)
+    recurrence = models.CharField(
+        max_length=10,
+        choices=Recurrence.choices,
+        default=Recurrence.ONCE,
+    )
 
     def __str__(self):
         return self.title

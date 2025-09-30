@@ -13,12 +13,15 @@ class HobbyForm(forms.ModelForm):
     class Meta:
         model = Hobby
         fields = [
-            'title', 'description', 'image', 'max_participants',
-            'date', 'place', 'province', 'city', 'neighbourhood'
+            'title','description','image','max_participants',
+            'date','place','province','city','neighbourhood',
+            'start_datetime','end_datetime','recurrence'
         ]
         widgets = {
             'date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            'description': forms.Textarea(attrs={'rows': 4}),
+            'start_datetime': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'end_datetime': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'description': forms.Textarea(attrs={'rows':4}),
         }
 
 class ProfileForm(forms.ModelForm):
