@@ -1,31 +1,22 @@
 from django import forms
+from .models import Hobby, Profile, Requirement, SupplierItem
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Hobby, Profile, Supplier
 
 class HobbyForm(forms.ModelForm):
-    category = forms.CharField(
-        required=False,
-        help_text="Enter a category for your hobby."
-    )
-    tags = forms.CharField(
-        required=False,
-        help_text="Enter tags separated by commas."
-    )
-    province = forms.CharField(required=False)
-    city = forms.CharField(required=False)
-    neighbourhood = forms.CharField(required=False, label='Neighbourhood')
-    requirements = forms.CharField(widget=forms.HiddenInput(), required=False)  # added
-
     class Meta:
         model = Hobby
+        # Replace 'date' and 'place' with the new fields.
+        # Add any other fields from the Hobby model that should be in the form.
         fields = [
-            'title', 'description', 'image', 'max_participants', 'date',
-            'place', 'province', 'city', 'neighbourhood'
+            'title', 'description', 'category', 'image', 'max_participants',
+            'province', 'city', 'neighbourhood',
+            'start_datetime', 'end_datetime', 'recurrence'
         ]
         widgets = {
+            'start_datetime': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'end_datetime': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'description': forms.Textarea(attrs={'rows': 4}),
-            'date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
         }
 
 class ProfileForm(forms.ModelForm):
