@@ -32,4 +32,5 @@ urlpatterns = [
     path('api/supplier-item-suggestions/', views.supplier_item_suggestions, name='supplier_item_suggestions'),
     path('supplier/requirement/<int:req_id>/<str:decision>/', views.supplier_decide_requirement, name='supplier_decide_requirement'),
     path('hobby/requirement/<int:req_id>/link-supplier/', views.host_link_supplier_item, name='host_link_supplier_item'),
+    path('about/', TemplateView.as_view(template_name='about.html'), name='about'),
 ]
