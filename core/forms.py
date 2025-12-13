@@ -37,6 +37,32 @@ class HobbyForm(forms.ModelForm):
         }
 
 class ProfileForm(forms.ModelForm):
+    remove_image = forms.BooleanField(required=False)
+    remove_image2 = forms.BooleanField(required=False)
+    remove_image3 = forms.BooleanField(required=False)
+
     class Meta:
         model = Profile
-        fields = ['bio', 'goal', 'image']
+        fields = ['bio', 'goal', 'image', 'image2', 'image3']
+
+    def clean(self):
+        cleaned = super().clean()
+        instance = getattr(self, "instance", None)
+
+        def keep_or_new(field, remove_field):
+            if cleaned.get(remove_field):
+                return False
+            if self.files.get(field):
+                return True
+            if instance and getattr(instance, field):
+                return True
+            return False
+
+        has_any = (
+            keep_or_new("image", "remove_image")
+            or keep_or_new("image2", "remove_image2")
+            or keep_or_new("image3", "remove_image3")
+        )
+        if not has_any:
+            self.add_error("image", "At least one profile picture is required.")
+        return cleaned

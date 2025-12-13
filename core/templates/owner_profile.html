@@ -5,8 +5,36 @@
     <div class="col-lg-8">
         <div class="card mb-4">
             <div class="card-body text-center">
-                {% if owner.profile and owner.profile.image %}
-                    <img src="{{ owner.profile.image.url }}" class="rounded-circle mb-3" width="120" height="120" alt="Avatar" style="object-fit: cover;">
+                {% if owner.profile and (owner.profile.image or owner.profile.image2 or owner.profile.image3) %}
+                    <div id="ownerPicsCarousel" class="carousel slide d-inline-block mb-3" data-bs-ride="carousel">
+                      <div class="carousel-inner rounded-circle overflow-hidden" style="width:120px;height:120px;">
+                        {% if owner.profile.image %}
+                          <div class="carousel-item active">
+                            <img src="{{ owner.profile.image.url }}" class="d-block w-100 h-100" alt="Avatar" style="object-fit:cover;">
+                          </div>
+                        {% endif %}
+                        {% if owner.profile.image2 %}
+                          <div class="carousel-item {% if not owner.profile.image %}active{% endif %}">
+                            <img src="{{ owner.profile.image2.url }}" class="d-block w-100 h-100" alt="Avatar" style="object-fit:cover;">
+                          </div>
+                        {% endif %}
+                        {% if owner.profile.image3 %}
+                          <div class="carousel-item {% if not owner.profile.image and not owner.profile.image2 %}active{% endif %}">
+                            <img src="{{ owner.profile.image3.url }}" class="d-block w-100 h-100" alt="Avatar" style="object-fit:cover;">
+                          </div>
+                        {% endif %}
+                      </div>
+                      {% if (owner.profile.image and owner.profile.image2) or (owner.profile.image and owner.profile.image3) or (owner.profile.image2 and owner.profile.image3) %}
+                        <button class="carousel-control-prev" type="button" data-bs-target="#ownerPicsCarousel" data-bs-slide="prev">
+                          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                          <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#ownerPicsCarousel" data-bs-slide="next">
+                          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                          <span class="visually-hidden">Next</span>
+                        </button>
+                      {% endif %}
+                    </div>
                 {% else %}
                     <!-- This is a 1x1 white pixel, styled to take up the space -->
                     <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAwAB/epv2AAAAABJRU5ErkJggg==" class="rounded-circle mb-3 bg-light" width="120" height="120" alt="Avatar">

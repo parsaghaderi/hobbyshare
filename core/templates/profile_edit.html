@@ -9,11 +9,44 @@
       <form method="post" enctype="multipart/form-data" class="row g-4">
         {% csrf_token %}
 
-        
-
-        
-
-        
+        <div class="col-12">
+          <h6 class="mb-2">Profile pictures</h6>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Picture 1 (required)</label>
+              {% if profile.image %}
+                <img src="{{ profile.image.url }}" class="img-thumbnail d-block mb-2" alt="Profile picture 1">
+                <div class="form-check mb-2">
+                  {{ form.remove_image }} <label class="form-check-label" for="{{ form.remove_image.id_for_label }}">Remove</label>
+                </div>
+              {% endif %}
+              {{ form.image }}
+              {{ form.image.errors }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Picture 2 (optional)</label>
+              {% if profile.image2 %}
+                <img src="{{ profile.image2.url }}" class="img-thumbnail d-block mb-2" alt="Profile picture 2">
+                <div class="form-check mb-2">
+                  {{ form.remove_image2 }} <label class="form-check-label" for="{{ form.remove_image2.id_for_label }}">Remove</label>
+                </div>
+              {% endif %}
+              {{ form.image2 }}
+              {{ form.image2.errors }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Picture 3 (optional)</label>
+              {% if profile.image3 %}
+                <img src="{{ profile.image3.url }}" class="img-thumbnail d-block mb-2" alt="Profile picture 3">
+                <div class="form-check mb-2">
+                  {{ form.remove_image3 }} <label class="form-check-label" for="{{ form.remove_image3.id_for_label }}">Remove</label>
+                </div>
+              {% endif %}
+              {{ form.image3 }}
+              {{ form.image3.errors }}
+            </div>
+          </div>
+        </div>
 
         <div class="col-12">
           <label class="form-label">Bio</label>

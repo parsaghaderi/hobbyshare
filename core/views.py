@@ -3,7 +3,7 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Hobby, Category, Application, Profile, Rating, ParticipantRating, Tag, Requirement, Supplier, SupplierItem
+from .models import Hobby, Category, Application, Profile, Rating, ParticipantRating, Tag, Requirement, Supplier, SupplierItem, HobbyImage
 from .forms import HobbyForm, ProfileForm, SupplierUserCreationForm
 from django.db.models import Count
 from django.utils import timezone
@@ -13,9 +13,39 @@ from django.views.decorators.http import require_POST
 from django.contrib import messages
 import json
 from types import SimpleNamespace
+from django.db.models import Q
 
 def home(request):
-    hobbies = Hobby.objects.all().select_related('category','host').order_by('-date')
+    hobbies = (
+        Hobby.objects.all()
+        .select_related('category', 'host')
+        .prefetch_related('tags')
+        .order_by('-date', '-id')
+    )
+    categories = Category.objects.all().order_by('name')
+
+    q = (request.GET.get('q') or '').strip()
+    category_id = (request.GET.get('category') or '').strip()
+    province = (request.GET.get('province') or '').strip()
+    city = (request.GET.get('city') or '').strip()
+    neighbourhood = (request.GET.get('neighbourhood') or '').strip()
+
+    if q:
+        hobbies = hobbies.filter(
+            Q(title__icontains=q)
+            | Q(description__icontains=q)
+            | Q(place__icontains=q)
+            | Q(category__name__icontains=q)
+            | Q(tags__name__icontains=q)
+        ).distinct()
+    if category_id:
+        hobbies = hobbies.filter(category_id=category_id)
+    if province:
+        hobbies = hobbies.filter(province__iexact=province)
+    if city:
+        hobbies = hobbies.filter(city__iexact=city)
+    if neighbourhood:
+        hobbies = hobbies.filter(neighbourhood__icontains=neighbourhood)
 
     static_preview = False
     display_hobbies = hobbies
@@ -78,6 +108,9 @@ def home(request):
         'hobbies': hobbies,
         'display_hobbies': display_hobbies,
         'static_preview': static_preview,
+        'categories': categories,
+        'province_selected': province,
+        'city_selected': city,
     }
     return render(request, 'home.html', context)
 
@@ -180,6 +213,17 @@ def create_hobby(request):
             hobby.city = form.cleaned_data.get('city') or ''
             hobby.neighbourhood = form.cleaned_data.get('neighbourhood') or ''
             hobby.save()
+
+            extra_files = request.FILES.getlist('images')
+            if extra_files:
+                max_extra = 5
+                for idx, f in enumerate(extra_files[:max_extra]):
+                    HobbyImage.objects.create(hobby=hobby, image=f, position=idx)
+                if len(extra_files) > max_extra:
+                    messages.info(request, f'Only the first {max_extra} images were saved.')
+                if not hobby.image:
+                    hobby.image = extra_files[0]
+                    hobby.save(update_fields=['image'])
 
             tag_names = _parse_tagify(form.cleaned_data.get('tags'))
             for tag_name in tag_names:
@@ -420,14 +464,23 @@ def edit_profile(request):
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
-            remove = form.cleaned_data.get('remove_image')
-            new_file = request.FILES.get('image')
             with transaction.atomic():
-                if (remove or new_file) and profile.image:
-                    profile.image.delete(save=False)
                 obj = form.save(commit=False)
-                if remove:
-                    obj.image = None
+                for field, remove_field in [
+                    ('image', 'remove_image'),
+                    ('image2', 'remove_image2'),
+                    ('image3', 'remove_image3'),
+                ]:
+                    if remove_field in form.cleaned_data and form.cleaned_data[remove_field]:
+                        old = getattr(profile, field)
+                        if old:
+                            old.delete(save=False)
+                        setattr(obj, field, None)
+                        continue
+                    if field in request.FILES:
+                        old = getattr(profile, field)
+                        if old:
+                            old.delete(save=False)
                 obj.save()
             return redirect('profile')
     else:
@@ -485,7 +538,6 @@ def supplier_dashboard(request):
     })
 
 from django.views.decorators.http import require_GET
-from django.db.models import Q
 
 @login_required
 @require_GET

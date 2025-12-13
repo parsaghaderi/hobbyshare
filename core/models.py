@@ -19,6 +19,8 @@ class Profile(models.Model):
     bio = models.TextField(blank=True)
     goal = models.CharField(max_length=255, blank=True)
     image = models.ImageField(upload_to=profile_image_upload_to, blank=True, null=True)
+    image2 = models.ImageField(upload_to=profile_image_upload_to, blank=True, null=True)
+    image3 = models.ImageField(upload_to=profile_image_upload_to, blank=True, null=True)
 
     def __str__(self):
         return f'{self.user.username} Profile'
@@ -97,6 +99,24 @@ class Hobby(models.Model):
 
     def get_average_rating(self):
         return self.ratings.aggregate(avg=Avg('score'))['avg'] or 0
+
+
+def hobby_extra_image_upload_to(instance, filename):
+    base, ext = os.path.splitext(filename)
+    ext = (ext or '.jpg').lower()
+    ts = timezone.now().strftime('%Y%m%d%H%M%S')
+    return f'hobby_images/{instance.hobby_id}/{ts}_{uuid.uuid4().hex}{ext}'
+
+
+class HobbyImage(models.Model):
+    hobby = models.ForeignKey(Hobby, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to=hobby_extra_image_upload_to, null=True, blank=True)
+    position = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['position', 'id']
+
 
 
 class Requirement(models.Model):

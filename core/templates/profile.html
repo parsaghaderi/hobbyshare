@@ -5,7 +5,41 @@
   <h2 class="mb-4">Your profile</h2>
   <div class="card">
     <div class="card-body d-flex align-items-center gap-3">
-      
+      <div style="width:120px; height:120px;">
+        {% if profile.image or profile.image2 or profile.image3 %}
+          <div id="profilePicsCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner rounded-circle overflow-hidden" style="width:120px;height:120px;">
+              {% if profile.image %}
+                <div class="carousel-item active">
+                  <img src="{{ profile.image.url }}" class="d-block w-100 h-100" alt="Profile picture" style="object-fit:cover;">
+                </div>
+              {% endif %}
+              {% if profile.image2 %}
+                <div class="carousel-item {% if not profile.image %}active{% endif %}">
+                  <img src="{{ profile.image2.url }}" class="d-block w-100 h-100" alt="Profile picture" style="object-fit:cover;">
+                </div>
+              {% endif %}
+              {% if profile.image3 %}
+                <div class="carousel-item {% if not profile.image and not profile.image2 %}active{% endif %}">
+                  <img src="{{ profile.image3.url }}" class="d-block w-100 h-100" alt="Profile picture" style="object-fit:cover;">
+                </div>
+              {% endif %}
+            </div>
+            {% if (profile.image and profile.image2) or (profile.image and profile.image3) or (profile.image2 and profile.image3) %}
+              <button class="carousel-control-prev" type="button" data-bs-target="#profilePicsCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+              </button>
+              <button class="carousel-control-next" type="button" data-bs-target="#profilePicsCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+              </button>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="rounded-circle bg-light" style="width:120px;height:120px;"></div>
+        {% endif %}
+      </div>
       <div>
         <div class="fw-semibold mb-1">@{{ profile.user.username }}</div>
         <div class="text-muted small mb-2">{{ profile.goal }}</div>
