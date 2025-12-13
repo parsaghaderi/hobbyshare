@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.contrib.auth.models import User
+from django.db import models
 from .models import Hobby, Category, Tag, Application, Requirement, Rating, ParticipantRating, Supplier, SupplierItem
 from .serializers import (
     HobbySerializer, CategorySerializer, TagSerializer, ApplicationSerializer,
@@ -19,7 +20,7 @@ class IsHostOrReadOnly(permissions.BasePermission):
         return host == request.user
 
 class HobbyViewSet(viewsets.ModelViewSet):
-    queryset = Hobby.objects.all().select_related('host','category').prefetch_related('tags','requirements')
+    queryset = Hobby.objects.all().select_related('host','category').prefetch_related('tags','requirements').order_by('-date', '-id')
     serializer_class = HobbySerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
@@ -173,7 +174,7 @@ class RequirementViewSet(mixins.CreateModelMixin,
         return Response(SupplierItemSerializer(items, many=True).data)
 
 class ApplicationViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Application.objects.select_related('hobby','applicant')
+    queryset = Application.objects.select_related('hobby','applicant').order_by('-applied_at', '-id')
     serializer_class = ApplicationSerializer
     permission_classes = [permissions.IsAuthenticated]
 

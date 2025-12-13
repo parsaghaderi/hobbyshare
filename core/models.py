@@ -3,7 +3,6 @@ from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import Avg
-from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from PIL import Image # Make sure PIL/Pillow is installed
@@ -19,8 +18,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(blank=True)
     goal = models.CharField(max_length=255, blank=True)
-    # This is the simple, correct way, just like your Hobby model.
-    image = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+    image = models.ImageField(upload_to=profile_image_upload_to, blank=True, null=True)
 
     def __str__(self):
         return f'{self.user.username} Profile'
@@ -67,6 +65,7 @@ class Hobby(models.Model):
     # Existing columns in DB:
     date = models.DateTimeField()
     place = models.CharField(max_length=300)
+    created_at = models.DateTimeField(auto_now_add=True)
     province = models.CharField(max_length=100, blank=True)
     city = models.CharField(max_length=100, blank=True)
     neighbourhood = models.CharField(max_length=150, blank=True)
@@ -83,6 +82,21 @@ class Hobby(models.Model):
 
     def category_name(self):
         return self.category.name if self.category else "Uncategorized"
+
+    def get_participant_count(self):
+        return self.applications.filter(status='accepted').count()
+
+    def user_is_accepted(self, user):
+        if not user or not getattr(user, "is_authenticated", False):
+            return False
+        return self.applications.filter(applicant=user, status='accepted').exists()
+
+    def has_ended(self):
+        end = self.end_datetime or self.date
+        return timezone.now() >= end
+
+    def get_average_rating(self):
+        return self.ratings.aggregate(avg=Avg('score'))['avg'] or 0
 
 
 class Requirement(models.Model):
