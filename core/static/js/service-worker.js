@@ -1,12 +1,11 @@
 /* Service Worker for Share A Hobby PWA */
-const APP_VERSION = 'v1';
+const APP_VERSION = 'v2';
 const PRECACHE = `precache-${APP_VERSION}`;
 const RUNTIME = `runtime-${APP_VERSION}`;
 const OFFLINE_URL = '/static/offline.html';
 
 // Core assets to pre-cache (add more static assets as needed)
 const PRECACHE_URLS = [
-  '/',
   OFFLINE_URL,
   '/static/css/custom.css',
   'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css',
