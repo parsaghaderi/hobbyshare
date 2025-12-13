@@ -10,6 +10,18 @@ class SupplierUserCreationForm(UserCreationForm):
         fields = ('username', 'email', 'password1', 'password2')
 
 class HobbyForm(forms.ModelForm):
+    category = forms.CharField(
+        required=False,
+        help_text="Pick an existing category or type a new one.",
+        widget=forms.TextInput(attrs={"placeholder": "Category"}),
+    )
+    tags = forms.CharField(
+        required=False,
+        help_text="Add tags (existing or new).",
+        widget=forms.TextInput(attrs={"placeholder": "Tags"}),
+    )
+    requirements = forms.CharField(required=False, widget=forms.HiddenInput())
+
     class Meta:
         model = Hobby
         fields = [

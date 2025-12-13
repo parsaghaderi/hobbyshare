@@ -130,22 +130,50 @@ def create_hobby(request):
     Handles the creation of a new hobby.
     Processes standard form data as well as JSON data from Tagify.
     """
+    def _parse_tagify(value):
+        """
+        Tagify returns JSON like: [{"value": "Foo"}]. Accept JSON, CSV, or plain strings.
+        """
+        if not value:
+            return []
+        raw = (value or "").strip()
+        if not raw:
+            return []
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            # Allow comma-separated or single values
+            return [v.strip() for v in raw.split(",") if v.strip()]
+        if isinstance(data, list):
+            out = []
+            for item in data:
+                if isinstance(item, dict):
+                    v = (item.get("value") or "").strip()
+                    if v:
+                        out.append(v)
+                elif isinstance(item, str):
+                    v = item.strip()
+                    if v:
+                        out.append(v)
+            return out
+        if isinstance(data, dict):
+            v = (data.get("value") or "").strip()
+            return [v] if v else []
+        return []
+
     if request.method == 'POST':
         form = HobbyForm(request.POST, request.FILES)
         if form.is_valid():
             hobby = form.save(commit=False)
             hobby.host = request.user
 
-            category_json = form.cleaned_data.get('category')
-            if category_json:
-                try:
-                    data = json.loads(category_json)
-                    if data:
-                        name = data[0]['value']
-                        category_obj, _ = Category.objects.get_or_create(name__iexact=name, defaults={'name': name})
-                        hobby.category = category_obj
-                except (json.JSONDecodeError, IndexError, KeyError):
-                    pass
+            category_names = _parse_tagify(form.cleaned_data.get('category'))
+            if category_names:
+                name = category_names[0]
+                category_obj = Category.objects.filter(name__iexact=name).first()
+                if not category_obj:
+                    category_obj = Category.objects.create(name=name)
+                hobby.category = category_obj
 
             # Location fields
             hobby.province = form.cleaned_data.get('province') or ''
@@ -153,17 +181,12 @@ def create_hobby(request):
             hobby.neighbourhood = form.cleaned_data.get('neighbourhood') or ''
             hobby.save()
 
-            tags_json = form.cleaned_data.get('tags')
-            if tags_json:
-                try:
-                    data = json.loads(tags_json)
-                    for t in data:
-                        tag_name = t.get('value')
-                        if tag_name:
-                            tag_obj, _ = Tag.objects.get_or_create(name__iexact=tag_name, defaults={'name': tag_name})
-                            hobby.tags.add(tag_obj)
-                except (json.JSONDecodeError, KeyError, TypeError):
-                    pass
+            tag_names = _parse_tagify(form.cleaned_data.get('tags'))
+            for tag_name in tag_names:
+                tag_obj = Tag.objects.filter(name__iexact=tag_name).first()
+                if not tag_obj:
+                    tag_obj = Tag.objects.create(name=tag_name)
+                hobby.tags.add(tag_obj)
 
             # Save requirements (primary: JSON from hidden field; fallback: discrete form inputs)
             req_json = form.cleaned_data.get('requirements')
