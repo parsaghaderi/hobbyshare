@@ -231,6 +231,7 @@ def create_hobby(request):
                     )
 
             return redirect('hobby_detail', hobby_id=hobby.id)
+        messages.error(request, "Please fix the errors below and try again.")
     else:
         form = HobbyForm()
     return render(request, 'hobby_form.html', {'form': form})

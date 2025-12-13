@@ -12,26 +12,80 @@
                 <h2 class="card-title text-center mb-4">Create a New Hobby</h2>
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                      <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                      </div>
+                    {% endif %}
                     
-                    <div class="mb-3">{{ form.title.label_tag }} {{ form.title }}</div>
-                    <div class="mb-3">{{ form.description.label_tag }} {{ form.description }}</div>
-                    <div class="mb-3">{{ form.image.label_tag }} {{ form.image }}</div>
+                    <div class="mb-3">
+                        {{ form.title.label_tag }} {{ form.title }}
+                        {{ form.title.errors }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.description.label_tag }} {{ form.description }}
+                        {{ form.description.errors }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.image.label_tag }} {{ form.image }}
+                        {{ form.image.errors }}
+                    </div>
                     
                     <div class="row g-3">
-                        <div class="col-md-6 mb-3">{{ form.category.label_tag }} {{ form.category }}</div>
-                        <div class="col-md-6 mb-3">{{ form.tags.label_tag }} {{ form.tags }}</div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.category.label_tag }} {{ form.category }}
+                            {{ form.category.errors }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.tags.label_tag }} {{ form.tags }}
+                            {{ form.tags.errors }}
+                        </div>
                     </div>
 
                     <div class="row g-3">
-                        <div class="col-md-4 mb-3">{{ form.max_participants.label_tag }} {{ form.max_participants }}</div>
-                        <div class="col-md-4 mb-3">{{ form.date.label_tag }} {{ form.date }}</div>
-                        <div class="col-md-4 mb-3">{{ form.place.label_tag }} {{ form.place }}</div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.max_participants.label_tag }} {{ form.max_participants }}
+                            {{ form.max_participants.errors }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.date.label_tag }} {{ form.date }}
+                            {{ form.date.errors }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.place.label_tag }} {{ form.place }}
+                            {{ form.place.errors }}
+                        </div>
                     </div>
 
                     <div class="row g-3">
-                        <div class="col-md-4 mb-3">{{ form.province.label_tag }} {{ form.province }}</div>
-                        <div class="col-md-4 mb-3">{{ form.city.label_tag }} {{ form.city }}</div>
-                        <div class="col-md-4 mb-3">{{ form.neighbourhood.label_tag }} {{ form.neighbourhood }}</div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.province.label_tag }} {{ form.province }}
+                            {{ form.province.errors }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.city.label_tag }} {{ form.city }}
+                            {{ form.city.errors }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.neighbourhood.label_tag }} {{ form.neighbourhood }}
+                            {{ form.neighbourhood.errors }}
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-4 mb-3">
+                            {{ form.recurrence.label_tag }} {{ form.recurrence }}
+                            {{ form.recurrence.errors }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.start_datetime.label_tag }} {{ form.start_datetime }}
+                            {{ form.start_datetime.errors }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.end_datetime.label_tag }} {{ form.end_datetime }}
+                            {{ form.end_datetime.errors }}
+                        </div>
                     </div>
 
                     <!-- Requirements Section -->
