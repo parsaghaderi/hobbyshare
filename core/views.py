@@ -581,7 +581,9 @@ def edit_profile(request):
         if form.is_valid():
             try:
                 with transaction.atomic():
-                    obj = form.save(commit=False)
+                    obj = profile
+                    obj.bio = form.cleaned_data.get('bio')
+                    obj.goal = form.cleaned_data.get('goal')
                     for field, remove_field in [
                         ('image', 'remove_image'),
                         ('image2', 'remove_image2'),
@@ -590,13 +592,13 @@ def edit_profile(request):
                         remove_requested = form.cleaned_data.get(remove_field)
                         new_file = _clone_upload(request.FILES.get(field))
                         if remove_requested:
-                            old = getattr(profile, field)
+                            old = getattr(obj, field)
                             if old:
                                 old.delete(save=False)
                             setattr(obj, field, None)
                             continue
                         if new_file:
-                            old = getattr(profile, field)
+                            old = getattr(obj, field)
                             if old:
                                 old.delete(save=False)
                             setattr(obj, field, new_file)
