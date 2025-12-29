@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -24,7 +25,7 @@
                           </div>
                         {% endif %}
                       </div>
-                      {% if (owner.profile.image and owner.profile.image2) or (owner.profile.image and owner.profile.image3) or (owner.profile.image2 and owner.profile.image3) %}
+                      {% if has_multiple_owner_images %}
                         <button class="carousel-control-prev" type="button" data-bs-target="#ownerPicsCarousel" data-bs-slide="prev">
                           <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                           <span class="visually-hidden">Previous</span>
@@ -36,8 +37,9 @@
                       {% endif %}
                     </div>
                 {% else %}
-                    <!-- This is a 1x1 white pixel, styled to take up the space -->
-                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAwAB/epv2AAAAABJRU5ErkJggg==" class="rounded-circle mb-3 bg-light" width="120" height="120" alt="Avatar">
+                    <div class="rounded-circle overflow-hidden mb-3" style="width:120px;height:120px;">
+                      <img src="{{ default_profile_image }}" class="d-block w-100 h-100" alt="Default avatar" style="object-fit:cover;">
+                    </div>
                 {% endif %}
                 <h2 class="card-title">{{ owner.username }}</h2>
                 <p class="text-muted">Average Host Rating: {{ owner.profile.get_average_rating|floatformat:1 }} / 5.0 ⭐</p>

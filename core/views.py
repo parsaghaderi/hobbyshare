@@ -482,7 +482,7 @@ def profile(request):
 
 @login_required
 def edit_profile(request):
-    profile = request.user.profile
+    profile, _ = Profile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
@@ -509,11 +509,24 @@ def edit_profile(request):
         form = ProfileForm(instance=profile)
     return render(request, 'profile_edit.html', {'form': form, 'profile': profile})
 
-def owner_profile(request, user_id):
-    owner = get_object_or_404(User, id=user_id)
+def owner_profile(request, username):
+    owner = get_object_or_404(User, username=username)
+    owner_profile_obj, _ = Profile.objects.get_or_create(user=owner)
     hosted_hobbies = Hobby.objects.filter(host=owner)
     owner_tags = Tag.objects.filter(hobby__in=hosted_hobbies).distinct()
-    return render(request, 'owner_profile.html', {'owner': owner, 'owner_tags': owner_tags})
+    image_count = sum(1 for img in [owner_profile_obj.image, owner_profile_obj.image2, owner_profile_obj.image3] if img)
+    from django.templatetags.static import static
+    default_profile_image = static('icons/default-profile.svg')
+    return render(
+        request,
+        'owner_profile.html',
+        {
+            'owner': owner,
+            'owner_tags': owner_tags,
+            'default_profile_image': default_profile_image,
+            'has_multiple_owner_images': image_count > 1,
+        },
+    )
 
 @login_required
 def supplier_dashboard(request):

@@ -20,7 +20,7 @@
                       </div>
                     {% endfor %}
                   </div>
-                  {% if hobby.image and extra_images or extra_images|length > 1 %}
+                  {% if (hobby.image and extra_images) or extra_images|length > 1 %}
                     <button class="carousel-control-prev" type="button" data-bs-target="#hobbyImagesCarousel" data-bs-slide="prev">
                       <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                       <span class="visually-hidden">Previous</span>
@@ -41,7 +41,7 @@
                     {% endfor %}
                 </div>
                 <h1 class="card-title">{{ hobby.title }}</h1>
-                <p class="text-muted">Hosted by <a href="{% url 'owner_profile' hobby.host.id %}">{{ hobby.host.username }}</a></p>
+                <p class="text-muted">Hosted by <a href="{% url 'owner_profile' hobby.host.username %}">{{ hobby.host.username }}</a></p>
                 
                 <hr>
 
