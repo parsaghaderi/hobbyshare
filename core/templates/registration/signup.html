@@ -45,27 +45,6 @@
           </div>
 
           <div class="form-check">
-            {{ form.is_supplier }} <label class="form-check-label" for="{{ form.is_supplier.id_for_label }}">I’m a supplier</label>
-          </div>
-          <div id="supplier-fields" class="border rounded-3 p-3" style="display:none;">
-            <div class="row g-3">
-              <div class="col-md-4">
-                <label class="form-label">Province</label>
-                <select name="province" id="id_province" class="form-select"></select>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label">City</label>
-                <select name="city" id="id_city" class="form-select"></select>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label">Neighbourhood</label>
-                <input type="text" name="neighbourhood" id="id_neighbourhood" class="form-control" placeholder="Neighbourhood" />
-              </div>
-            </div>
-            <small class="text-muted">Suppliers must set their service area.</small>
-          </div>
-
-          <div class="form-check">
             {{ form.terms_accepted }}
             <label class="form-check-label" for="{{ form.terms_accepted.id_for_label }}">
               I agree to the <a href="{% url 'about' %}#mission">community guidelines</a> and <a href="{% url 'about' %}#liability">limited liability terms</a>.
@@ -100,23 +79,4 @@
 {% endblock %}
 
 {% block extra_scripts %}
-  <script src="{% static 'js/canada_locations.js' %}"></script>
-  <script>
-  (function(){
-      const supplierCheckbox = document.getElementById('id_is_supplier');
-      if(!supplierCheckbox) return;
-      const supplierFields = document.getElementById('supplier-fields');
-      const provSel = document.getElementById('id_province');
-      const citySel = document.getElementById('id_city');
-      const neighInput = document.getElementById('id_neighbourhood');
-      function toggle(){
-          supplierFields.style.display = supplierCheckbox.checked ? 'block':'none';
-      }
-      supplierCheckbox.addEventListener('change', toggle);
-      toggle();
-      if(window.populateLocationSelectors){
-          populateLocationSelectors(provSel, citySel, neighInput, '', '');
-      }
-  })();
-  </script>
 {% endblock %}
