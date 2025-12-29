@@ -5,34 +5,9 @@
     <!-- Main Content Column -->
     <div class="col-lg-8">
         <div class="card">
-            {% with extra_images=hobby.images.all %}
-              {% if hobby.image or extra_images %}
-                <div id="hobbyImagesCarousel" class="carousel slide">
-                  <div class="carousel-inner">
-                    {% if hobby.image %}
-                      <div class="carousel-item active">
-                        <img src="{{ hobby.image.url }}" class="d-block w-100" alt="{{ hobby.title }}" style="max-height:480px;object-fit:cover;border-top-left-radius: 12px; border-top-right-radius: 12px;">
-                      </div>
-                    {% endif %}
-                    {% for img in extra_images %}
-                      <div class="carousel-item {% if not hobby.image and forloop.first %}active{% endif %}">
-                        <img src="{{ img.image.url }}" class="d-block w-100" alt="{{ hobby.title }}" style="max-height:480px;object-fit:cover;border-top-left-radius: 12px; border-top-right-radius: 12px;">
-                      </div>
-                    {% endfor %}
-                  </div>
-                  {% if hobby.image and extra_images or extra_images|length > 1 %}
-                    <button class="carousel-control-prev" type="button" data-bs-target="#hobbyImagesCarousel" data-bs-slide="prev">
-                      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                      <span class="visually-hidden">Previous</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#hobbyImagesCarousel" data-bs-slide="next">
-                      <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                      <span class="visually-hidden">Next</span>
-                    </button>
-                  {% endif %}
-                </div>
-              {% endif %}
-            {% endwith %}
+            {% if hobby.image %}
+              <img src="{{ hobby.image.url }}" class="card-img-top" alt="{{ hobby.title }}" style="max-height:420px;object-fit:cover;">
+            {% endif %}
             <div class="card-body">
                 <div class="mb-3">
                     <span class="badge" style="background-color: var(--primary-color); color: white;">{{ hobby.category.name|default:"Uncategorized" }}</span>
@@ -73,6 +48,40 @@
                 {% endif %}
             </div>
         </div>
+
+        {% with extra_images=hobby.images.all %}
+          {% if extra_images %}
+            <div class="card mt-3">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h5 class="card-title mb-0">Event Photos</h5>
+                  {% if is_host and event_has_passed %}
+                    <small class="text-muted">You can add up to 3 after the event.</small>
+                  {% endif %}
+                </div>
+                <div id="hobbyImagesCarousel" class="carousel slide">
+                  <div class="carousel-inner">
+                    {% for img in extra_images %}
+                      <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <img src="{{ img.image.url }}" class="d-block w-100" alt="{{ hobby.title }}" style="max-height:420px;object-fit:cover;border-radius:12px;">
+                      </div>
+                    {% endfor %}
+                  </div>
+                  {% if extra_images|length > 1 %}
+                    <button class="carousel-control-prev" type="button" data-bs-target="#hobbyImagesCarousel" data-bs-slide="prev">
+                      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                      <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#hobbyImagesCarousel" data-bs-slide="next">
+                      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                      <span class="visually-hidden">Next</span>
+                    </button>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        {% endwith %}
 
         {% if is_host and event_has_passed %}
           <div class="card mt-3">

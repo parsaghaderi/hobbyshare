@@ -1,27 +1,57 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<div class="row">
-    <div class="col-md-6 offset-md-3">
-        <div class="card">
-            <div class="card-body">
-                <h2 class="card-title text-center">Login</h2>
-                <form method="post">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Login</button>
-                    </div>
-                </form>
-                <p class="text-center mt-3">
-                    Don't have an account? <a href="{% url 'signup' %}">Sign Up</a>
-                </p>
-            </div>
-        </div>
-    </div>
+<div class="auth-hero mb-4">
+  <div>
+    <p class="text-uppercase small mb-1 text-primary">Welcome back</p>
+    <h2 class="fw-bold mb-0">Sign in to keep sharing hobbies.</h2>
+  </div>
+  <div class="d-none d-md-flex gap-2">
+    <span class="badge bg-white text-primary">Discover</span>
+    <span class="badge bg-white text-primary">Host</span>
+    <span class="badge bg-white text-primary">Connect</span>
+  </div>
 </div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card shadow-sm border-0 rounded-4">
+      <div class="card-body p-4 p-md-5">
+        <h4 class="fw-semibold mb-4">Login</h4>
+        <form method="post" class="vstack gap-3">
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger py-2">{{ form.non_field_errors }}</div>
+          {% endif %}
+          {% for field in form.visible_fields %}
+            <div>
+              <label class="form-label fw-semibold">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}<div class="text-danger small">{{ field.errors|striptags }}</div>{% endif %}
+            </div>
+          {% endfor %}
+          <button type="submit" class="btn btn-primary w-100 py-2">Login</button>
+        </form>
+        <p class="text-center mt-3 mb-0 text-muted">
+          Don’t have an account? <a href="{% url 'signup' %}" class="fw-semibold">Sign up</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
 <style>
-    /* Simple form styling for login/signup */
-    .card-body .form-group, .card-body p { margin-bottom: 1rem; }
+.auth-hero{
+  background: linear-gradient(135deg,#e8f0ff,#f3f7ff);
+  border:1px solid #e5edff;
+  padding:20px 24px;
+  border-radius:18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.card input{
+  border-radius:12px;
+  padding:10px 12px;
+}
 </style>
 {% endblock %}

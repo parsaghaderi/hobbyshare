@@ -5,9 +5,13 @@ from .models import Hobby, Profile
 
 class SupplierUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=False)
+    terms_accepted = forms.BooleanField(
+        required=True,
+        label="I agree to the Community Guidelines and Limited Liability terms"
+    )
     class Meta:
         model = User
-        fields = ('username', 'email', 'password1', 'password2')
+        fields = ('username', 'email', 'password1', 'password2', 'terms_accepted')
 
 class HobbyForm(forms.ModelForm):
     category = forms.CharField(

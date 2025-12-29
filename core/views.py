@@ -263,17 +263,6 @@ def create_hobby(request):
             hobby.neighbourhood = form.cleaned_data.get('neighbourhood') or ''
             hobby.save()
 
-            extra_files = request.FILES.getlist('images')
-            if extra_files:
-                max_extra = 5
-                for idx, f in enumerate(extra_files[:max_extra]):
-                    HobbyImage.objects.create(hobby=hobby, image=f, position=idx)
-                if len(extra_files) > max_extra:
-                    messages.info(request, f'Only the first {max_extra} images were saved.')
-                if not hobby.image:
-                    hobby.image = extra_files[0]
-                    hobby.save(update_fields=['image'])
-
             tag_names = _parse_tagify_value(form.cleaned_data.get('tags'))
             for tag_name in tag_names:
                 tag_obj = Tag.objects.filter(name__iexact=tag_name).first()
@@ -358,19 +347,6 @@ def edit_hobby(request, hobby_id):
                 if not tag_obj:
                     tag_obj = Tag.objects.create(name=tag_name)
                 hobby.tags.add(tag_obj)
-
-            # optional extra gallery images
-            extra_files = request.FILES.getlist('images')
-            if extra_files:
-                existing = hobby.images.count()
-                max_extra = 5
-                for idx, f in enumerate(extra_files[:max_extra]):
-                    HobbyImage.objects.create(hobby=hobby, image=f, position=existing + idx)
-                if len(extra_files) > max_extra:
-                    messages.info(request, f'Only the first {max_extra} images were saved.')
-                if not hobby.image:
-                    hobby.image = extra_files[0]
-                    hobby.save(update_fields=['image'])
 
             return redirect('hobby_detail', hobby_id=hobby.id)
         messages.error(request, "Please fix the errors below and try again.")

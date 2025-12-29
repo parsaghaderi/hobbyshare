@@ -2,51 +2,100 @@
 {% load static %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-6 offset-md-3">
-        <div class="card">
-            <div class="card-body">
-                <h2 class="card-title text-center">Create an Account</h2>
-                <form method="post" enctype="multipart/form-data" id="signup-form">
-                    {% csrf_token %}
-                    <p>{{ form.username.label_tag }} {{ form.username }}</p>
-                    <p>{{ form.password1.label_tag }} {{ form.password1 }}</p>
-                    <p>{{ form.password2.label_tag }} {{ form.password2 }}</p>
-                    <div class="form-check mb-2">
-                        {{ form.is_supplier }} {{ form.is_supplier.label_tag }}
-                    </div>
-                    <div id="supplier-fields" style="display:none;">
-                        <div class="row g-2">
-                            <div class="col-md-4">
-                                <label>Province</label>
-                                <select name="province" id="id_province" class="form-control"></select>
-                            </div>
-                            <div class="col-md-4">
-                                <label>City</label>
-                                <select name="city" id="id_city" class="form-control"></select>
-                            </div>
-                            <div class="col-md-4">
-                                <label>Neighbourhood</label>
-                                <input type="text" name="neighbourhood" id="id_neighbourhood" class="form-control" placeholder="Neighbourhood" />
-                            </div>
-                        </div>
-                        <small class="text-muted">Location required for suppliers</small>
-                    </div>
-                    {% for field in form.hidden_fields %}{{ field }}{% endfor %}
-                    <div class="d-grid">
-                      <button type="submit" class="btn btn-primary">Sign Up</button>
-                    </div>
-                </form>
-                 <p class="text-center mt-3">
-                    Already have an account? <a href="{% url 'login' %}">Login</a>
-                </p>
-            </div>
-        </div>
-    </div>
+<div class="auth-hero mb-4">
+  <div>
+    <p class="text-uppercase small mb-1 text-primary">Join the community</p>
+    <h2 class="fw-bold mb-0">Create an account to host, join, and share.</h2>
+  </div>
 </div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card shadow-sm border-0 rounded-4">
+      <div class="card-body p-4 p-md-5">
+        <h4 class="fw-semibold mb-4">Sign up</h4>
+        <form method="post" enctype="multipart/form-data" id="signup-form" class="vstack gap-3">
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger py-2">{{ form.non_field_errors }}</div>
+          {% endif %}
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">{{ form.username.label }}</label>
+              {{ form.username }}
+              {% if form.username.errors %}<div class="text-danger small">{{ form.username.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">{{ form.email.label }}</label>
+              {{ form.email }}
+              {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors|striptags }}</div>{% endif %}
+            </div>
+          </div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">{{ form.password1.label }}</label>
+              {{ form.password1 }}
+              {% if form.password1.errors %}<div class="text-danger small">{{ form.password1.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">{{ form.password2.label }}</label>
+              {{ form.password2 }}
+              {% if form.password2.errors %}<div class="text-danger small">{{ form.password2.errors|striptags }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="form-check">
+            {{ form.is_supplier }} <label class="form-check-label" for="{{ form.is_supplier.id_for_label }}">I’m a supplier</label>
+          </div>
+          <div id="supplier-fields" class="border rounded-3 p-3" style="display:none;">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">Province</label>
+                <select name="province" id="id_province" class="form-select"></select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">City</label>
+                <select name="city" id="id_city" class="form-select"></select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Neighbourhood</label>
+                <input type="text" name="neighbourhood" id="id_neighbourhood" class="form-control" placeholder="Neighbourhood" />
+              </div>
+            </div>
+            <small class="text-muted">Suppliers must set their service area.</small>
+          </div>
+
+          <div class="form-check">
+            {{ form.terms_accepted }}
+            <label class="form-check-label" for="{{ form.terms_accepted.id_for_label }}">
+              I agree to the <a href="{% url 'about' %}#mission">community guidelines</a> and <a href="{% url 'about' %}#liability">limited liability terms</a>.
+            </label>
+            {% if form.terms_accepted.errors %}<div class="text-danger small">{{ form.terms_accepted.errors|striptags }}</div>{% endif %}
+          </div>
+
+          {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+          <button type="submit" class="btn btn-primary w-100 py-2">Create account</button>
+        </form>
+        <p class="text-center mt-3 mb-0 text-muted">Already have an account? <a class="fw-semibold" href="{% url 'login' %}">Login</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
 <style>
-    .card-body ul { list-style-type: none; padding: 0; }
-    .card-body .helptext { font-size: 0.8rem; color: #6c757d; }
+.auth-hero{
+  background: linear-gradient(135deg,#e8f0ff,#f3f7ff);
+  border:1px solid #e5edff;
+  padding:20px 24px;
+  border-radius:18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.card input, .card select{
+  border-radius:12px;
+  padding:10px 12px;
+}
 </style>
 {% endblock %}
 
