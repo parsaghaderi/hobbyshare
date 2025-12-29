@@ -25,6 +25,7 @@ urlpatterns = [
     path('supplier/dashboard/', views.supplier_dashboard, name='supplier_dashboard'),
     path('hobby/<int:hobby_id>/images/upload/', views.upload_hobby_images, name='upload_hobby_images'),
     path('users/<str:username>/', views.owner_profile, name='owner_profile'),
+    path('api/locations/canada/', views.get_canada_locations, name='get_canada_locations'),
     path('api/tags/', views.get_tags, name='get_tags'),
     path('api/categories/', views.get_categories, name='get_categories'),
     path('api/supplier-item-suggestions/', views.supplier_item_suggestions, name='supplier_item_suggestions'),

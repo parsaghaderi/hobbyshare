@@ -5,6 +5,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Hobby, Category, Application, Profile, Rating, ParticipantRating, Tag, Requirement, Supplier, SupplierItem, HobbyImage
 from .forms import HobbyForm, ProfileForm, SupplierUserCreationForm
+from django.conf import settings
 from django.db.models import Count
 from django.utils import timezone
 from django.http import JsonResponse, HttpResponseForbidden
@@ -707,6 +708,15 @@ def get_categories(request):
     """
     categories = Category.objects.values_list('name', flat=True)
     return JsonResponse(list(categories), safe=False)
+
+@require_GET
+def get_canada_locations(request):
+    """Return province/city data for Canada as JSON."""
+    if not hasattr(get_canada_locations, "_cache"):
+        data_path = settings.BASE_DIR / "core" / "static" / "data" / "canada_locations.json"
+        with open(data_path, "r", encoding="utf-8") as f:
+            get_canada_locations._cache = json.load(f)
+    return JsonResponse(get_canada_locations._cache, safe=False)
 
 @login_required
 @require_POST
