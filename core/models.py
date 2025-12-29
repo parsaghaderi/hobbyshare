@@ -36,6 +36,10 @@ class Profile(models.Model):
         # alias used by templates
         return self.get_host_rating()
 
+    def get_participant_rating(self):
+        scores = ParticipantRating.objects.filter(participant=self.user)
+        return scores.aggregate(Avg('score'))['score__avg'] or 0
+
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
 

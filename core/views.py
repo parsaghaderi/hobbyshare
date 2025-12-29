@@ -15,6 +15,36 @@ import json
 from types import SimpleNamespace
 from django.db.models import Q
 
+def _parse_tagify_value(value):
+    """
+    Tagify returns JSON like: [{"value": "Foo"}]. Accept JSON, CSV, or plain strings.
+    """
+    if not value:
+        return []
+    raw = (value or "").strip()
+    if not raw:
+        return []
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return [v.strip() for v in raw.split(",") if v.strip()]
+    if isinstance(data, list):
+        out = []
+        for item in data:
+            if isinstance(item, dict):
+                v = (item.get("value") or "").strip()
+                if v:
+                    out.append(v)
+            elif isinstance(item, str):
+                v = item.strip()
+                if v:
+                    out.append(v)
+        return out
+    if isinstance(data, dict):
+        v = (data.get("value") or "").strip()
+        return [v] if v else []
+    return []
+
 def home(request):
     hobbies = (
         Hobby.objects.all()
@@ -169,49 +199,40 @@ def hobby_detail(request, hobby_id):
     return render(request, 'hobby_detail.html', context)
 
 @login_required
+@require_POST
+def upload_hobby_images(request, hobby_id):
+    """Allow host to upload up to 3 additional images after the event has ended."""
+    hobby = get_object_or_404(Hobby, id=hobby_id, host=request.user)
+    if not hobby.has_ended():
+        return HttpResponseForbidden("Images can be added only after the event ends.")
+    files = request.FILES.getlist('images')
+    if not files:
+        return redirect('hobby_detail', hobby_id=hobby.id)
+    existing = hobby.images.count()
+    max_new = 3
+    for idx, f in enumerate(files[:max_new]):
+        HobbyImage.objects.create(
+            hobby=hobby,
+            image=f,
+            position=existing + idx
+        )
+    if len(files) > max_new:
+        messages.info(request, f"Only the first {max_new} images were saved.")
+    return redirect('hobby_detail', hobby_id=hobby.id)
+
+@login_required
 def create_hobby(request):
     """
     Handles the creation of a new hobby.
     Processes standard form data as well as JSON data from Tagify.
     """
-    def _parse_tagify(value):
-        """
-        Tagify returns JSON like: [{"value": "Foo"}]. Accept JSON, CSV, or plain strings.
-        """
-        if not value:
-            return []
-        raw = (value or "").strip()
-        if not raw:
-            return []
-        try:
-            data = json.loads(raw)
-        except json.JSONDecodeError:
-            # Allow comma-separated or single values
-            return [v.strip() for v in raw.split(",") if v.strip()]
-        if isinstance(data, list):
-            out = []
-            for item in data:
-                if isinstance(item, dict):
-                    v = (item.get("value") or "").strip()
-                    if v:
-                        out.append(v)
-                elif isinstance(item, str):
-                    v = item.strip()
-                    if v:
-                        out.append(v)
-            return out
-        if isinstance(data, dict):
-            v = (data.get("value") or "").strip()
-            return [v] if v else []
-        return []
-
     if request.method == 'POST':
         form = HobbyForm(request.POST, request.FILES)
         if form.is_valid():
             hobby = form.save(commit=False)
             hobby.host = request.user
 
-            category_names = _parse_tagify(form.cleaned_data.get('category'))
+            category_names = _parse_tagify_value(form.cleaned_data.get('category'))
             if category_names:
                 name = category_names[0]
                 category_obj = Category.objects.filter(name__iexact=name).first()
@@ -236,7 +257,7 @@ def create_hobby(request):
                     hobby.image = extra_files[0]
                     hobby.save(update_fields=['image'])
 
-            tag_names = _parse_tagify(form.cleaned_data.get('tags'))
+            tag_names = _parse_tagify_value(form.cleaned_data.get('tags'))
             for tag_name in tag_names:
                 tag_obj = Tag.objects.filter(name__iexact=tag_name).first()
                 if not tag_obj:
@@ -290,6 +311,59 @@ def create_hobby(request):
     else:
         form = HobbyForm()
     return render(request, 'hobby_form.html', {'form': form})
+
+@login_required
+def edit_hobby(request, hobby_id):
+    hobby = get_object_or_404(Hobby, id=hobby_id, host=request.user)
+    if request.method == 'POST':
+        form = HobbyForm(request.POST, request.FILES, instance=hobby)
+        if form.is_valid():
+            hobby = form.save(commit=False)
+            # category
+            category_names = _parse_tagify_value(form.cleaned_data.get('category'))
+            if category_names:
+                name = category_names[0]
+                category_obj = Category.objects.filter(name__iexact=name).first()
+                if not category_obj:
+                    category_obj = Category.objects.create(name=name)
+                hobby.category = category_obj
+            # location
+            hobby.province = form.cleaned_data.get('province') or ''
+            hobby.city = form.cleaned_data.get('city') or ''
+            hobby.neighbourhood = form.cleaned_data.get('neighbourhood') or ''
+            hobby.save()
+
+            # tags
+            hobby.tags.clear()
+            tag_names = _parse_tagify_value(form.cleaned_data.get('tags'))
+            for tag_name in tag_names:
+                tag_obj = Tag.objects.filter(name__iexact=tag_name).first()
+                if not tag_obj:
+                    tag_obj = Tag.objects.create(name=tag_name)
+                hobby.tags.add(tag_obj)
+
+            # optional extra gallery images
+            extra_files = request.FILES.getlist('images')
+            if extra_files:
+                existing = hobby.images.count()
+                max_extra = 5
+                for idx, f in enumerate(extra_files[:max_extra]):
+                    HobbyImage.objects.create(hobby=hobby, image=f, position=existing + idx)
+                if len(extra_files) > max_extra:
+                    messages.info(request, f'Only the first {max_extra} images were saved.')
+                if not hobby.image:
+                    hobby.image = extra_files[0]
+                    hobby.save(update_fields=['image'])
+
+            return redirect('hobby_detail', hobby_id=hobby.id)
+        messages.error(request, "Please fix the errors below and try again.")
+    else:
+        form = HobbyForm(instance=hobby)
+        if hobby.category:
+            form.initial['category'] = hobby.category.name
+        if hobby.tags.exists():
+            form.initial['tags'] = ", ".join(hobby.tags.values_list('name', flat=True))
+    return render(request, 'hobby_form.html', {'form': form, 'is_edit': True, 'hobby': hobby})
 
 @login_required
 def apply_for_hobby(request, hobby_id):
@@ -461,6 +535,7 @@ def profile(request):
     image_count = sum(
         1 for img in [profile.image, profile.image2, profile.image3] if img
     )
+    participant_rating = profile.get_participant_rating()
     hosted_hobbies = Hobby.objects.filter(host=request.user).order_by('-date')
     my_apps = (
         Application.objects
@@ -477,6 +552,7 @@ def profile(request):
             'my_apps': my_apps,
             'default_profile_image': default_profile_image,
             'has_multiple_profile_images': image_count > 1,
+            'participant_rating': participant_rating,
         },
     )
 
@@ -493,16 +569,19 @@ def edit_profile(request):
                     ('image2', 'remove_image2'),
                     ('image3', 'remove_image3'),
                 ]:
-                    if remove_field in form.cleaned_data and form.cleaned_data[remove_field]:
+                    remove_requested = form.cleaned_data.get(remove_field)
+                    new_file = request.FILES.get(field)
+                    if remove_requested:
                         old = getattr(profile, field)
                         if old:
                             old.delete(save=False)
                         setattr(obj, field, None)
                         continue
-                    if field in request.FILES:
+                    if new_file:
                         old = getattr(profile, field)
                         if old:
                             old.delete(save=False)
+                        setattr(obj, field, new_file)
                 obj.save()
             return redirect('profile')
     else:
@@ -517,6 +596,7 @@ def owner_profile(request, username):
     image_count = sum(1 for img in [owner_profile_obj.image, owner_profile_obj.image2, owner_profile_obj.image3] if img)
     from django.templatetags.static import static
     default_profile_image = static('icons/default-profile.svg')
+    participant_rating = owner_profile_obj.get_participant_rating()
     return render(
         request,
         'owner_profile.html',
@@ -525,6 +605,7 @@ def owner_profile(request, username):
             'owner_tags': owner_tags,
             'default_profile_image': default_profile_image,
             'has_multiple_owner_images': image_count > 1,
+            'participant_rating': participant_rating,
         },
     )
 

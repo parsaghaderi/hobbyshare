@@ -1,48 +1,66 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container" style="max-width: 720px;">
-  <h2 class="mb-4">Edit profile</h2>
+<div class="container" style="max-width: 820px;">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <h2 class="mb-1">Edit profile</h2>
+      <div class="text-muted small">Keep at least one photo; add up to three.</div>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'profile' %}">Back to profile</a>
+  </div>
 
-  <div class="card">
+  <div class="card shadow-sm">
     <div class="card-body">
       <form method="post" enctype="multipart/form-data" class="row g-4">
         {% csrf_token %}
 
         <div class="col-12">
           <h6 class="mb-2">Profile pictures</h6>
-          <div class="row g-3">
+          <div class="row g-3 align-items-start">
             <div class="col-md-4">
               <label class="form-label">Picture 1 (required)</label>
-              {% if profile.image %}
-                <img src="{{ profile.image.url }}" class="img-thumbnail d-block mb-2" alt="Profile picture 1">
-                <div class="form-check mb-2">
-                  {{ form.remove_image }} <label class="form-check-label" for="{{ form.remove_image.id_for_label }}">Remove</label>
-                </div>
-              {% endif %}
+              <div class="rounded-4 overflow-hidden border bg-light mb-2" style="width:180px;height:180px;">
+                {% if profile.image %}
+                  <img src="{{ profile.image.url }}" class="w-100 h-100" alt="Profile picture 1" style="object-fit:cover;">
+                {% else %}
+                  <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted">No image</div>
+                {% endif %}
+              </div>
               {{ form.image }}
+              <div class="form-check mt-2">
+                {{ form.remove_image }} <label class="form-check-label" for="{{ form.remove_image.id_for_label }}">Remove</label>
+              </div>
               {{ form.image.errors }}
             </div>
             <div class="col-md-4">
               <label class="form-label">Picture 2 (optional)</label>
-              {% if profile.image2 %}
-                <img src="{{ profile.image2.url }}" class="img-thumbnail d-block mb-2" alt="Profile picture 2">
-                <div class="form-check mb-2">
-                  {{ form.remove_image2 }} <label class="form-check-label" for="{{ form.remove_image2.id_for_label }}">Remove</label>
-                </div>
-              {% endif %}
+              <div class="rounded-4 overflow-hidden border bg-light mb-2" style="width:180px;height:180px;">
+                {% if profile.image2 %}
+                  <img src="{{ profile.image2.url }}" class="w-100 h-100" alt="Profile picture 2" style="object-fit:cover;">
+                {% else %}
+                  <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted">No image</div>
+                {% endif %}
+              </div>
               {{ form.image2 }}
+              <div class="form-check mt-2">
+                {{ form.remove_image2 }} <label class="form-check-label" for="{{ form.remove_image2.id_for_label }}">Remove</label>
+              </div>
               {{ form.image2.errors }}
             </div>
             <div class="col-md-4">
               <label class="form-label">Picture 3 (optional)</label>
-              {% if profile.image3 %}
-                <img src="{{ profile.image3.url }}" class="img-thumbnail d-block mb-2" alt="Profile picture 3">
-                <div class="form-check mb-2">
-                  {{ form.remove_image3 }} <label class="form-check-label" for="{{ form.remove_image3.id_for_label }}">Remove</label>
-                </div>
-              {% endif %}
+              <div class="rounded-4 overflow-hidden border bg-light mb-2" style="width:180px;height:180px;">
+                {% if profile.image3 %}
+                  <img src="{{ profile.image3.url }}" class="w-100 h-100" alt="Profile picture 3" style="object-fit:cover;">
+                {% else %}
+                  <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted">No image</div>
+                {% endif %}
+              </div>
               {{ form.image3 }}
+              <div class="form-check mt-2">
+                {{ form.remove_image3 }} <label class="form-check-label" for="{{ form.remove_image3.id_for_label }}">Remove</label>
+              </div>
               {{ form.image3.errors }}
             </div>
           </div>
@@ -55,7 +73,6 @@
 
         <div class="col-12">
           <label class="form-label">Goal</label>
-          
           {{ form.goal }}
         </div>
 

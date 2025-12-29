@@ -9,7 +9,9 @@
     <div class="col-lg-8">
         <div class="card">
             <div class="card-body p-4 p-md-5">
-                <h2 class="card-title text-center mb-4">Create a New Hobby</h2>
+                <h2 class="card-title text-center mb-4">
+                  {% if is_edit %}Edit Hobby{% else %}Create a New Hobby{% endif %}
+                </h2>
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
 
@@ -108,7 +110,9 @@
                     {{ form.requirements }}
 
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">Post Hobby</button>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                          {% if is_edit %}Update Hobby{% else %}Post Hobby{% endif %}
+                        </button>
                     </div>
                 </form>
             </div>
