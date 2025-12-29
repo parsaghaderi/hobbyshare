@@ -13,6 +13,14 @@
         <div class="col-md-4">
             <input type="text" name="q" class="form-control" placeholder="Search for hobbies..." value="{{ request.GET.q }}">
         </div>
+        <div class="col-md-3">
+            <input type="text" name="tags" list="tags-list" class="form-control" placeholder="Tags (comma separated)" value="{{ request.GET.tags }}">
+            <datalist id="tags-list">
+                {% for tag in tags %}
+                    <option value="{{ tag.name }}">
+                {% endfor %}
+            </datalist>
+        </div>
         <div class="col-md-2">
             <select name="category" class="form-select">
                 <option value="">All Categories</option>

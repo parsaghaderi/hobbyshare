@@ -24,11 +24,17 @@ def home(request):
     )
     categories = Category.objects.all().order_by('name')
 
+    def _parse_csv_list(value):
+        if not value:
+            return []
+        return [v.strip() for v in value.split(',') if v.strip()]
+
     q = (request.GET.get('q') or '').strip()
     category_id = (request.GET.get('category') or '').strip()
     province = (request.GET.get('province') or '').strip()
     city = (request.GET.get('city') or '').strip()
     neighbourhood = (request.GET.get('neighbourhood') or '').strip()
+    tag_names = _parse_csv_list(request.GET.get('tags'))
 
     if q:
         hobbies = hobbies.filter(
@@ -46,11 +52,15 @@ def home(request):
         hobbies = hobbies.filter(city__iexact=city)
     if neighbourhood:
         hobbies = hobbies.filter(neighbourhood__icontains=neighbourhood)
+    if tag_names:
+        hobbies = hobbies.filter(tags__name__in=tag_names).distinct()
+
+    applied_filters = any([q, category_id, province, city, neighbourhood, tag_names])
 
     static_preview = False
     display_hobbies = hobbies
 
-    if not request.user.is_authenticated:
+    if not request.user.is_authenticated and not applied_filters:
         static_preview = True
         # Static preview objects use only fields template expects
         display_hobbies = [
@@ -109,6 +119,7 @@ def home(request):
         'display_hobbies': display_hobbies,
         'static_preview': static_preview,
         'categories': categories,
+        'tags': Tag.objects.all().order_by('name'),
         'province_selected': province,
         'city_selected': city,
     }
