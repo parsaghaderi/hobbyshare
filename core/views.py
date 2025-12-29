@@ -14,6 +14,9 @@ from django.contrib import messages
 import json
 from types import SimpleNamespace
 from django.db.models import Q
+import logging
+
+logger = logging.getLogger(__name__)
 
 def _parse_tagify_value(value):
     """
@@ -562,28 +565,36 @@ def edit_profile(request):
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
-            with transaction.atomic():
-                obj = form.save(commit=False)
-                for field, remove_field in [
-                    ('image', 'remove_image'),
-                    ('image2', 'remove_image2'),
-                    ('image3', 'remove_image3'),
-                ]:
-                    remove_requested = form.cleaned_data.get(remove_field)
-                    new_file = request.FILES.get(field)
-                    if remove_requested:
-                        old = getattr(profile, field)
-                        if old:
-                            old.delete(save=False)
-                        setattr(obj, field, None)
-                        continue
-                    if new_file:
-                        old = getattr(profile, field)
-                        if old:
-                            old.delete(save=False)
-                        setattr(obj, field, new_file)
-                obj.save()
-            return redirect('profile')
+            try:
+                with transaction.atomic():
+                    obj = form.save(commit=False)
+                    for field, remove_field in [
+                        ('image', 'remove_image'),
+                        ('image2', 'remove_image2'),
+                        ('image3', 'remove_image3'),
+                    ]:
+                        remove_requested = form.cleaned_data.get(remove_field)
+                        new_file = request.FILES.get(field)
+                        if remove_requested:
+                            old = getattr(profile, field)
+                            if old:
+                                old.delete(save=False)
+                            setattr(obj, field, None)
+                            continue
+                        if new_file:
+                            try:
+                                new_file.seek(0)
+                            except Exception:
+                                pass
+                            old = getattr(profile, field)
+                            if old:
+                                old.delete(save=False)
+                            setattr(obj, field, new_file)
+                    obj.save()
+                return redirect('profile')
+            except Exception:
+                logger.exception("Profile update failed for user %s", request.user.username)
+                messages.error(request, "Upload failed. Please try a different image.")
     else:
         form = ProfileForm(instance=profile)
     return render(request, 'profile_edit.html', {'form': form, 'profile': profile})
