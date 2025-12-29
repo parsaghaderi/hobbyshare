@@ -10,7 +10,8 @@ window.CANADA_LOCATIONS = {
     'Sherbrooke': ['Lennoxville'],
     'Saguenay': ['Chicoutimi','Jonquiere'],
     'Trois-Rivieres': ['Cap-de-la-Madeleine'],
-    'Terrebonne': ['Lachenaie']
+    'Terrebonne': ['Lachenaie'],
+    'Levis': ['Desjardins']
   } },
   ON: { name: 'Ontario', cities: {
     'Toronto': ['Downtown','North York','Scarborough','Etobicoke'],
@@ -22,10 +23,17 @@ window.CANADA_LOCATIONS = {
     'Markham': ['Unionville'],
     'Vaughan': ['Maple','Concord'],
     'Kitchener': ['Downtown'],
+    'Waterloo': ['Uptown'],
     'Windsor': ['Downtown'],
     'Richmond Hill': ['Hillcrest'],
     'Oakville': ['Kerr Village'],
-    'Waterloo': ['Uptown']
+    'Burlington': ['Downtown'],
+    'Oshawa': ['Downtown'],
+    'St. Catharines': ['Downtown'],
+    'Barrie': ['Downtown'],
+    'Guelph': ['Downtown'],
+    'Kingston': ['Downtown'],
+    'Sudbury': ['Downtown']
   } },
   AB: { name: 'Alberta', cities: {
     'Calgary': ['Downtown','Beltline','Kensington'],
@@ -34,7 +42,8 @@ window.CANADA_LOCATIONS = {
     'Lethbridge': ['Downtown'],
     'St. Albert': ['Downtown'],
     'Medicine Hat': ['Southlands'],
-    'Grande Prairie': ['Avondale']
+    'Grande Prairie': ['Avondale'],
+    'Fort McMurray': ['Downtown']
   } },
   BC: { name: 'British Columbia', cities: {
     'Vancouver': ['Downtown','Kitsilano','Mount Pleasant'],
@@ -46,35 +55,42 @@ window.CANADA_LOCATIONS = {
     'Kelowna': ['Downtown'],
     'Victoria': ['Downtown','Fernwood','James Bay'],
     'Nanaimo': ['Downtown'],
-    'Kamloops': ['Sahali','North Shore']
+    'Kamloops': ['Sahali','North Shore'],
+    'Langley': ['City Centre'],
+    'Delta': ['Ladner','Tsawwassen']
   } },
   MB: { name: 'Manitoba', cities: {
     'Winnipeg': ['Downtown','St. Boniface','Fort Garry'],
     'Brandon': ['Downtown'],
     'Steinbach': ['Downtown'],
-    'Thompson': ['Downtown']
+    'Thompson': ['Downtown'],
+    'Portage la Prairie': ['Downtown']
   } },
   SK: { name: 'Saskatchewan', cities: {
     'Saskatoon': ['Riversdale','Nutana','Stonebridge'],
     'Regina': ['Downtown','Cathedral','Harbour Landing'],
     'Prince Albert': ['Downtown'],
-    'Moose Jaw': ['Downtown']
+    'Moose Jaw': ['Downtown'],
+    'Swift Current': ['Downtown']
   } },
   NS: { name: 'Nova Scotia', cities: {
     'Halifax': ['Downtown','North End','South End'],
     'Sydney': ['Downtown'],
-    'Dartmouth': ['Downtown']
+    'Dartmouth': ['Downtown'],
+    'Truro': ['Downtown']
   } },
   NB: { name: 'New Brunswick', cities: {
     'Moncton': ['Downtown'],
     'Fredericton': ['Downtown'],
     'Saint John': ['Uptown'],
-    'Dieppe': ['Downtown']
+    'Dieppe': ['Downtown'],
+    'Miramichi': ['Newcastle']
   } },
   NL: { name: 'Newfoundland and Labrador', cities: {
     'St. John\'s': ['Downtown','Quidi Vidi'],
     'Mount Pearl': ['Downtown'],
-    'Corner Brook': ['Downtown']
+    'Corner Brook': ['Downtown'],
+    'Gander': ['Downtown']
   } },
   PE: { name: 'Prince Edward Island', cities: {
     'Charlottetown': ['Downtown'],
