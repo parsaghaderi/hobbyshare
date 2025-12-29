@@ -458,6 +458,9 @@ def profile(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
     from django.templatetags.static import static
     default_profile_image = static('icons/default-profile.svg')
+    image_count = sum(
+        1 for img in [profile.image, profile.image2, profile.image3] if img
+    )
     hosted_hobbies = Hobby.objects.filter(host=request.user).order_by('-date')
     my_apps = (
         Application.objects
@@ -473,6 +476,7 @@ def profile(request):
             'hosted_hobbies': hosted_hobbies,
             'my_apps': my_apps,
             'default_profile_image': default_profile_image,
+            'has_multiple_profile_images': image_count > 1,
         },
     )
 

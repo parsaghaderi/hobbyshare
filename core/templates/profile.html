@@ -1,5 +1,5 @@
-{% load static %}
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="container" style="max-width: 720px;">
@@ -26,7 +26,7 @@
                 </div>
               {% endif %}
             </div>
-            {% if (profile.image and profile.image2) or (profile.image and profile.image3) or (profile.image2 and profile.image3) %}
+            {% if has_multiple_profile_images %}
               <button class="carousel-control-prev" type="button" data-bs-target="#profilePicsCarousel" data-bs-slide="prev">
                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                 <span class="visually-hidden">Previous</span>
