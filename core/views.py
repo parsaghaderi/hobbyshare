@@ -583,6 +583,8 @@ def edit_profile(request):
                             continue
                         if new_file:
                             try:
+                                if hasattr(new_file, "open"):
+                                    new_file.open("rb")
                                 new_file.seek(0)
                             except Exception:
                                 pass
