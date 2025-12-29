@@ -15,6 +15,7 @@ import json
 from types import SimpleNamespace
 from django.db.models import Q
 import logging
+from django.core.files.base import ContentFile
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +48,19 @@ def _parse_tagify_value(value):
         v = (data.get("value") or "").strip()
         return [v] if v else []
     return []
+
+def _clone_upload(upload):
+    """Return a fresh ContentFile copy of the uploaded file to avoid closed streams."""
+    if not upload:
+        return None
+    try:
+        upload.seek(0)
+    except Exception:
+        pass
+    data = upload.read()
+    cf = ContentFile(data)
+    cf.name = getattr(upload, 'name', 'upload')
+    return cf
 
 def home(request):
     hobbies = (
@@ -574,7 +588,7 @@ def edit_profile(request):
                         ('image3', 'remove_image3'),
                     ]:
                         remove_requested = form.cleaned_data.get(remove_field)
-                        new_file = request.FILES.get(field)
+                        new_file = _clone_upload(request.FILES.get(field))
                         if remove_requested:
                             old = getattr(profile, field)
                             if old:
@@ -582,12 +596,6 @@ def edit_profile(request):
                             setattr(obj, field, None)
                             continue
                         if new_file:
-                            try:
-                                if hasattr(new_file, "open"):
-                                    new_file.open("rb")
-                                new_file.seek(0)
-                            except Exception:
-                                pass
                             old = getattr(profile, field)
                             if old:
                                 old.delete(save=False)
