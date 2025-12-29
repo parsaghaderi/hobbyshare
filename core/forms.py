@@ -41,6 +41,22 @@ class ProfileForm(forms.ModelForm):
     remove_image2 = forms.BooleanField(required=False)
     remove_image3 = forms.BooleanField(required=False)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        instance = getattr(self, "instance", None)
+        has_existing = bool(
+            instance
+            and (
+                getattr(instance, "image", None)
+                or getattr(instance, "image2", None)
+                or getattr(instance, "image3", None)
+            )
+        )
+        if not has_existing:
+            # Make the primary image field required for users with no pictures yet.
+            self.fields["image"].required = True
+            self.fields["image"].widget.attrs["required"] = "required"
+
     class Meta:
         model = Profile
         fields = ['bio', 'goal', 'image', 'image2', 'image3']

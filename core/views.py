@@ -455,7 +455,9 @@ def signup(request):
 
 @login_required
 def profile(request):
-    profile = request.user.profile
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+    from django.templatetags.static import static
+    default_profile_image = static('icons/default-profile.svg')
     hosted_hobbies = Hobby.objects.filter(host=request.user).order_by('-date')
     my_apps = (
         Application.objects
@@ -466,7 +468,12 @@ def profile(request):
     return render(
         request,
         'profile.html',
-        {'profile': profile, 'hosted_hobbies': hosted_hobbies, 'my_apps': my_apps},
+        {
+            'profile': profile,
+            'hosted_hobbies': hosted_hobbies,
+            'my_apps': my_apps,
+            'default_profile_image': default_profile_image,
+        },
     )
 
 @login_required

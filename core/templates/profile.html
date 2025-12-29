@@ -1,3 +1,4 @@
+{% load static %}
 {% extends 'base.html' %}
 
 {% block content %}
@@ -37,7 +38,9 @@
             {% endif %}
           </div>
         {% else %}
-          <div class="rounded-circle bg-light" style="width:120px;height:120px;"></div>
+          <div class="rounded-circle overflow-hidden" style="width:120px;height:120px;">
+            <img src="{{ default_profile_image }}" class="d-block w-100 h-100" alt="Default profile" style="object-fit:cover;">
+          </div>
         {% endif %}
       </div>
       <div>
