@@ -1,5 +1,5 @@
 /* Service Worker for Share A Hobby PWA */
-const APP_VERSION = 'v2';
+const APP_VERSION = 'v3';
 const PRECACHE = `precache-${APP_VERSION}`;
 const RUNTIME = `runtime-${APP_VERSION}`;
 const OFFLINE_URL = '/static/offline.html';

@@ -1,19 +1,37 @@
 // Minimal Canada locations dataset (can be expanded)
 // Structure: { provinceCode: { name: 'Ontario', cities: { 'Toronto': ['Downtown','Scarborough','North York','Etobicoke'], ... } } }
+// Fallback data in case the API fetch fails (ensures Ontario/major cities still render)
+const FALLBACK_CANADA_LOCATIONS = {
+  "QC": { "name": "Quebec", "cities": { "Montreal": [], "Quebec City": [], "Laval": [], "Gatineau": [], "Longueuil": [], "Sherbrooke": [], "Saguenay": [], "Trois-Rivieres": [], "Terrebonne": [], "Levis": [] } },
+  "ON": { "name": "Ontario", "cities": { "Toronto": [], "Ottawa": [], "Mississauga": [], "Brampton": [], "Hamilton": [], "London": [], "Markham": [], "Vaughan": [], "Kitchener": [], "Waterloo": [], "Windsor": [], "Richmond Hill": [], "Oakville": [], "Burlington": [], "Oshawa": [], "St. Catharines": [], "Barrie": [], "Guelph": [], "Kingston": [], "Sudbury": [] } },
+  "AB": { "name": "Alberta", "cities": { "Calgary": [], "Edmonton": [], "Red Deer": [], "Lethbridge": [], "St. Albert": [], "Medicine Hat": [], "Grande Prairie": [], "Fort McMurray": [] } },
+  "BC": { "name": "British Columbia", "cities": { "Vancouver": [], "Surrey": [], "Burnaby": [], "Richmond": [], "Abbotsford": [], "Coquitlam": [], "Kelowna": [], "Victoria": [], "Nanaimo": [], "Kamloops": [], "Langley": [], "Delta": [] } },
+  "MB": { "name": "Manitoba", "cities": { "Winnipeg": [], "Brandon": [], "Steinbach": [], "Thompson": [], "Portage la Prairie": [] } },
+  "SK": { "name": "Saskatchewan", "cities": { "Saskatoon": [], "Regina": [], "Prince Albert": [], "Moose Jaw": [], "Swift Current": [] } },
+  "NS": { "name": "Nova Scotia", "cities": { "Halifax": [], "Sydney": [], "Dartmouth": [], "Truro": [] } },
+  "NB": { "name": "New Brunswick", "cities": { "Moncton": [], "Fredericton": [], "Saint John": [], "Dieppe": [], "Miramichi": [] } },
+  "NL": { "name": "Newfoundland and Labrador", "cities": { "St. John's": [], "Mount Pearl": [], "Corner Brook": [], "Gander": [] } },
+  "PE": { "name": "Prince Edward Island", "cities": { "Charlottetown": [], "Summerside": [] } },
+  "YT": { "name": "Yukon", "cities": { "Whitehorse": [] } },
+  "NT": { "name": "Northwest Territories", "cities": { "Yellowknife": [] } },
+  "NU": { "name": "Nunavut", "cities": { "Iqaluit": [] } }
+};
+
 window.CANADA_LOCATIONS = window.CANADA_LOCATIONS || {};
 
 let _locationsPromise = null;
 function ensureCanadaLocations() {
   if (_locationsPromise) return _locationsPromise;
-  _locationsPromise = fetch('/api/locations/canada/')
+  _locationsPromise = fetch('/api/locations/canada/?v=3')
     .then(res => res.json())
     .then(data => {
-      window.CANADA_LOCATIONS = data || {};
+      window.CANADA_LOCATIONS = data && Object.keys(data).length ? data : FALLBACK_CANADA_LOCATIONS;
       return window.CANADA_LOCATIONS;
     })
     .catch(err => {
-      console.warn('Failed to load Canada locations from API, using existing data if any.', err);
-      return window.CANADA_LOCATIONS || {};
+      console.warn('Failed to load Canada locations from API, using fallback.', err);
+      window.CANADA_LOCATIONS = FALLBACK_CANADA_LOCATIONS;
+      return window.CANADA_LOCATIONS;
     });
   return _locationsPromise;
 }
