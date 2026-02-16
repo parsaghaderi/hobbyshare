@@ -1,17 +1,33 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container" style="max-width: 600px;">
-    <h2 class="mb-4">Edit Profile</h2>
-    <div class="card">
-        <div class="card-body">
-            <form method="post" enctype="multipart/form-data"> {# <-- THIS IS THE FIX #}
-                {% csrf_token %}
-                {{ u_form.as_p }}
-                {{ p_form.as_p }}
-                <button type="submit" class="btn btn-primary">Update</button>
-            </form>
+<div class="container" style="max-width: 760px;">
+  <div class="card edit-profile-card">
+    <div class="card-body p-4 p-md-5">
+      <div class="mb-4">
+        <p class="text-uppercase small fw-bold text-primary mb-1">Account Settings</p>
+        <h2 class="mb-1">Edit Profile</h2>
+        <p class="text-muted mb-0">Update your account and public profile details.</p>
+      </div>
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ u_form.as_p }}
+        {{ p_form.as_p }}
+        <div class="d-flex gap-2 pt-2">
+          <button type="submit" class="btn btn-primary">Update</button>
+          <a href="{% url 'profile' %}" class="btn btn-outline-secondary">Cancel</a>
         </div>
+      </form>
     </div>
+  </div>
 </div>
+
+<style>
+  .edit-profile-card {
+    border-radius: 18px;
+    border: 1px solid #d6e1ef;
+    box-shadow: 0 14px 34px rgba(18, 38, 63, 0.12);
+  }
+</style>
 {% endblock %}

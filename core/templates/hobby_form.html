@@ -5,110 +5,138 @@
 <!-- Tagify CSS -->
 <link href="https://unpkg.com/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
 
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-body p-4 p-md-5">
-                <h2 class="card-title text-center mb-4">
-                  {% if is_edit %}Edit Hobby{% else %}Create a New Hobby{% endif %}
-                </h2>
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-
-                    {% if form.non_field_errors %}
-                      <div class="alert alert-danger">
-                        {{ form.non_field_errors }}
-                      </div>
-                    {% endif %}
-                    
-                    <div class="mb-3">
-                        {{ form.title.label_tag }} {{ form.title }}
-                        {{ form.title.errors }}
-                    </div>
-                    <div class="mb-3">
-                        {{ form.description.label_tag }} {{ form.description }}
-                        {{ form.description.errors }}
-                    </div>
-                    <div class="mb-3">
-                        {{ form.image.label_tag }} {{ form.image }}
-                        {{ form.image.errors }}
-                        <div class="form-text">Banner image shown on cards and detail pages.</div>
-                    </div>
-                    
-                    <div class="row g-3">
-                        <div class="col-md-6 mb-3">
-                            {{ form.category.label_tag }} {{ form.category }}
-                            {{ form.category.errors }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form.tags.label_tag }} {{ form.tags }}
-                            {{ form.tags.errors }}
+<div class="create-hobby-shell">
+    <div class="create-hobby-backdrop"></div>
+    <div class="row justify-content-center">
+        <div class="col-xl-10">
+            <div class="card hobby-form-card">
+                <div class="card-body p-4 p-md-5">
+                    <div class="hobby-form-header">
+                        <div class="new-ui-pill">New streamlined form</div>
+                        <p class="eyebrow mb-2">{% if is_edit %}Update Listing{% else %}Host a New Experience{% endif %}</p>
+                        <h2 class="card-title mb-2">{% if is_edit %}Edit Your Hobby{% else %}Create a New Hobby{% endif %}</h2>
+                        <p class="subhead mb-0">Clear details get faster joins. Fill the essentials first, then polish with schedule and requirements.</p>
+                        <div class="hobby-form-steps mt-3">
+                            <span>Basics</span>
+                            <span>Location</span>
+                            <span>Schedule</span>
+                            <span>Requirements</span>
                         </div>
                     </div>
 
-                    <div class="row g-3">
-                        <div class="col-md-4 mb-3">
-                            {{ form.max_participants.label_tag }} {{ form.max_participants }}
-                            {{ form.max_participants.errors }}
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            {{ form.date.label_tag }} {{ form.date }}
-                            {{ form.date.errors }}
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            {{ form.place.label_tag }} {{ form.place }}
-                            {{ form.place.errors }}
-                        </div>
-                    </div>
+                    <form method="post" enctype="multipart/form-data" class="hobby-form-grid">
+                        {% csrf_token %}
 
-                    <div class="row g-3">
-                        <div class="col-md-4 mb-3">
-                            {{ form.province.label_tag }} {{ form.province }}
-                            {{ form.province.errors }}
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            {{ form.city.label_tag }} {{ form.city }}
-                            {{ form.city.errors }}
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            {{ form.neighbourhood.label_tag }} {{ form.neighbourhood }}
-                            {{ form.neighbourhood.errors }}
-                        </div>
-                    </div>
+                        {% if form.non_field_errors %}
+                          <div class="alert alert-danger mb-2">
+                            {{ form.non_field_errors }}
+                          </div>
+                        {% endif %}
 
-                    <div class="row g-3">
-                        <div class="col-md-4 mb-3">
-                            {{ form.recurrence.label_tag }} {{ form.recurrence }}
-                            {{ form.recurrence.errors }}
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            {{ form.start_datetime.label_tag }} {{ form.start_datetime }}
-                            {{ form.start_datetime.errors }}
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            {{ form.end_datetime.label_tag }} {{ form.end_datetime }}
-                            {{ form.end_datetime.errors }}
-                        </div>
-                    </div>
+                        <section class="form-section">
+                            <h3 class="section-title">Basics</h3>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    {{ form.title.label_tag }} {{ form.title }}
+                                    {{ form.title.errors }}
+                                </div>
+                                <div class="col-12">
+                                    {{ form.description.label_tag }} {{ form.description }}
+                                    <div class="form-meta-row">
+                                        <small class="text-muted">What will people do, and what makes this fun?</small>
+                                        <small id="description-counter" class="text-muted">0 chars</small>
+                                    </div>
+                                    {{ form.description.errors }}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ form.category.label_tag }} {{ form.category }}
+                                    {{ form.category.errors }}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ form.tags.label_tag }} {{ form.tags }}
+                                    {{ form.tags.errors }}
+                                </div>
+                                <div class="col-12">
+                                    {{ form.image.label_tag }} {{ form.image }}
+                                    {{ form.image.errors }}
+                                    <div class="form-text">Banner image shown on cards and detail pages.</div>
+                                    <div id="image-preview-wrap" class="image-preview-wrap mt-2" style="display:none;">
+                                        <img id="image-preview" alt="Selected hobby image preview">
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
 
-                    <!-- Requirements Section -->
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">Requirements (Optional)</label>
-                                                <div class="alert alert-info py-2" id="supplier-suggestions-box" style="display:none;">
-                                                    <strong>Suggested Items from Suppliers:</strong>
-                                                    <ul id="supplier-suggestions" class="mb-0 small"></ul>
-                                                </div>
-                        <div id="requirements-list" class="mb-2"></div>
-                        <button type="button" id="add-requirement" class="btn btn-sm btn-outline-secondary">Add Requirement</button>
-                    </div>
-                    {{ form.requirements }}
+                        <section class="form-section">
+                            <h3 class="section-title">Location</h3>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    {{ form.place.label_tag }} {{ form.place }}
+                                    {{ form.place.errors }}
+                                </div>
+                                <div class="col-md-4">
+                                    {{ form.province.label_tag }} {{ form.province }}
+                                    {{ form.province.errors }}
+                                </div>
+                                <div class="col-md-4">
+                                    {{ form.city.label_tag }} {{ form.city }}
+                                    {{ form.city.errors }}
+                                </div>
+                                <div class="col-12">
+                                    {{ form.neighbourhood.label_tag }} {{ form.neighbourhood }}
+                                    {{ form.neighbourhood.errors }}
+                                </div>
+                            </div>
+                        </section>
 
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                          {% if is_edit %}Update Hobby{% else %}Post Hobby{% endif %}
-                        </button>
-                    </div>
-                </form>
+                        <section class="form-section">
+                            <h3 class="section-title">Timing & Capacity</h3>
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    {{ form.max_participants.label_tag }} {{ form.max_participants }}
+                                    {{ form.max_participants.errors }}
+                                </div>
+                                <div class="col-md-3">
+                                    {{ form.date.label_tag }} {{ form.date }}
+                                    {{ form.date.errors }}
+                                </div>
+                                <div class="col-md-2">
+                                    {{ form.recurrence.label_tag }} {{ form.recurrence }}
+                                    {{ form.recurrence.errors }}
+                                </div>
+                                <div class="col-md-4">
+                                    {{ form.start_datetime.label_tag }} {{ form.start_datetime }}
+                                    {{ form.start_datetime.errors }}
+                                </div>
+                                <div class="col-md-4">
+                                    {{ form.end_datetime.label_tag }} {{ form.end_datetime }}
+                                    {{ form.end_datetime.errors }}
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="form-section">
+                            <h3 class="section-title">Requirements</h3>
+                            <p class="section-note">Add what attendees should bring. You can mark what you will provide yourself.</p>
+                            <div class="alert alert-info py-2 mb-3" id="supplier-suggestions-box" style="display:none;">
+                                <strong>Suggested items from suppliers:</strong>
+                                <ul id="supplier-suggestions" class="mb-0 small"></ul>
+                            </div>
+                            <div class="alert alert-warning py-2 mb-3">
+                                <strong>Note:</strong> Supplier suggestions are optional. Payments, shipping, pickup, and returns are coordinated directly between users.
+                            </div>
+                            <div id="requirements-list" class="requirements-list mb-2"></div>
+                            <button type="button" id="add-requirement" class="btn btn-sm btn-outline-secondary">Add Requirement</button>
+                            {{ form.requirements }}
+                        </section>
+
+                        <div class="d-grid mt-2">
+                            <button type="submit" class="btn btn-primary btn-lg hobby-submit-btn">
+                                {% if is_edit %}Update Hobby{% else %}Post Hobby{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -155,20 +183,33 @@ document.addEventListener("DOMContentLoaded", function() {
     const reqList = document.getElementById('requirements-list');
     const form = document.querySelector('form');
     const hiddenReqInput = document.querySelector('[name="requirements"]');
+    const imageInput = document.getElementById('{{ form.image.id_for_label }}');
+    const imagePreviewWrap = document.getElementById('image-preview-wrap');
+    const imagePreview = document.getElementById('image-preview');
+    const descriptionInput = document.getElementById('{{ form.description.id_for_label }}');
+    const descriptionCounter = document.getElementById('description-counter');
 
-    addReqBtn.addEventListener('click', () => {
+    function renderDescriptionCount() {
+        if (!descriptionInput || !descriptionCounter) return;
+        descriptionCounter.textContent = `${descriptionInput.value.trim().length} chars`;
+    }
+
+    function addRequirementRow(name = '', provided = false) {
         const reqRow = document.createElement('div');
         reqRow.classList.add('input-group', 'mb-2');
-        const index = reqList.querySelectorAll('.input-group').length; // used for array ordering
         reqRow.innerHTML = `
-            <input type="text" class="form-control requirement-name" name="req_name[]" placeholder="Requirement name (e.g., Tent)">
+            <input type="text" class="form-control requirement-name" name="req_name[]" value="${name}" placeholder="Requirement name (e.g., Tent)">
             <div class="input-group-text">
-                <input class="form-check-input mt-0 requirement-provided" name="req_provided[]" type="checkbox" title="Check if you are providing this">
+                <input class="form-check-input mt-0 requirement-provided" name="req_provided[]" type="checkbox" title="Check if you are providing this" ${provided ? 'checked' : ''}>
                 <label class="ms-2">I'll provide</label>
             </div>
             <button type="button" class="btn btn-outline-danger remove-requirement">Remove</button>
         `;
         reqList.appendChild(reqRow);
+    }
+
+    addReqBtn.addEventListener('click', () => {
+        addRequirementRow();
     });
 
     reqList.addEventListener('click', (e) => {
@@ -189,6 +230,36 @@ document.addEventListener("DOMContentLoaded", function() {
         hiddenReqInput.value = JSON.stringify(requirements);
     });
 
+    if (hiddenReqInput && hiddenReqInput.value) {
+        try {
+            const existing = JSON.parse(hiddenReqInput.value);
+            if (Array.isArray(existing) && existing.length) {
+                existing.forEach(item => addRequirementRow(item.name || '', !!item.provided));
+            }
+        } catch (err) {}
+    }
+
+    if (imageInput) {
+        imageInput.addEventListener('change', () => {
+            const file = imageInput.files && imageInput.files[0];
+            if (!file) {
+                imagePreviewWrap.style.display = 'none';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = evt => {
+                imagePreview.src = evt.target.result;
+                imagePreviewWrap.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    if (descriptionInput) {
+        descriptionInput.addEventListener('input', renderDescriptionCount);
+        renderDescriptionCount();
+    }
+
     // Live supplier suggestions
     const suggestionsBox = document.getElementById('supplier-suggestions-box');
     const suggestionsList = document.getElementById('supplier-suggestions');
@@ -202,11 +273,12 @@ document.addEventListener("DOMContentLoaded", function() {
         try { categoryName = JSON.parse(categoryInput.value)[0]?.value || ''; } catch(e){}
         let tagNames = [];
         try { tagNames = JSON.parse(tagsInput.value).map(t=>t.value); } catch(e){}
-        if(!province || !city || !neighbourhood || (!categoryName && tagNames.length===0)){
+        if(!province || !city || (!categoryName && tagNames.length===0)){
             suggestionsBox.style.display='none';
             return;
         }
-        const params = new URLSearchParams({province,city,neighbourhood,category:categoryName,tags:tagNames.join(',')});
+        const params = new URLSearchParams({province,city,category:categoryName,tags:tagNames.join(',')});
+        if (neighbourhood) params.set('neighbourhood', neighbourhood);
         fetch('{% url "supplier_item_suggestions" %}?'+params.toString())
           .then(r=>r.json())
           .then(items => {
@@ -214,7 +286,7 @@ document.addEventListener("DOMContentLoaded", function() {
               suggestionsList.innerHTML = '';
               items.forEach(it => {
                   const li = document.createElement('li');
-                  li.innerHTML = `<span class='fw-bold'>${it.name}</span> <span class='text-muted'>(${it.supplier}${it.tag? ' • '+it.tag:''}${it.category? ' • '+it.category:''})</span> <button type='button' class='btn btn-sm btn-link p-0 ms-2 add-suggest' data-name='${it.name}'>Add</button>`;
+                  li.innerHTML = `<span class='fw-bold'>${it.name}</span> <span class='text-muted'>(${it.supplier}${it.tag? ' • '+it.tag:''}${it.category? ' • '+it.category:''}${it.condition? ' • '+it.condition:''}${it.price? ' • $'+it.price:''})</span> <button type='button' class='btn btn-sm btn-link p-0 ms-2 add-suggest' data-name='${it.name}'>Add</button>`;
                   suggestionsList.appendChild(li);
               });
               suggestionsBox.style.display='block';
@@ -229,16 +301,7 @@ document.addEventListener("DOMContentLoaded", function() {
     suggestionsList.addEventListener('click', e => {
         if(e.target.classList.contains('add-suggest')){
             const name = e.target.getAttribute('data-name');
-            const reqRow = document.createElement('div');
-            reqRow.classList.add('input-group', 'mb-2');
-            reqRow.innerHTML = `
-                <input type="text" class="form-control requirement-name" name="req_name[]" value="${name}" placeholder="Requirement name">
-                <div class="input-group-text">
-                    <input class="form-check-input mt-0 requirement-provided" name="req_provided[]" type="checkbox" title="Check if you are providing this">
-                    <label class="ms-2">I'll provide</label>
-                </div>
-                <button type="button" class="btn btn-outline-danger remove-requirement">Remove</button>`;
-            reqList.appendChild(reqRow);
+            addRequirementRow(name, false);
         }
     });
     // Initial fetch attempt after a short delay
@@ -247,24 +310,208 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 
 <style>
-    /* Improve form rendering */
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap');
+
+    .create-hobby-shell {
+        position: relative;
+        isolation: isolate;
+        padding: 0.5rem 0;
+    }
+
+    .create-hobby-backdrop {
+        position: absolute;
+        inset: -1rem 10% auto 10%;
+        height: 260px;
+        background: radial-gradient(circle at 20% 30%, rgba(13, 110, 253, 0.25), transparent 55%),
+                    radial-gradient(circle at 80% 20%, rgba(32, 201, 151, 0.24), transparent 60%);
+        filter: blur(20px);
+        z-index: -1;
+    }
+
+    .hobby-form-card {
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 18px 40px rgba(17, 37, 62, 0.14);
+        border: 1px solid rgba(72, 94, 124, 0.14);
+    }
+
+    .hobby-form-card:hover {
+        transform: none;
+    }
+
+    .hobby-form-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .new-ui-pill {
+        display: inline-block;
+        margin-bottom: 0.7rem;
+        padding: 0.36rem 0.7rem;
+        border-radius: 999px;
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.75rem;
+        letter-spacing: 0.03em;
+        background: linear-gradient(90deg, #0d6efd, #20c997);
+    }
+
+    .hobby-form-header .eyebrow {
+        display: inline-block;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 0.77rem;
+        font-weight: 800;
+        color: #0b5ed7;
+        background: rgba(13, 110, 253, 0.1);
+        border-radius: 999px;
+        padding: 0.36rem 0.7rem;
+        font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .hobby-form-header h2 {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: clamp(1.85rem, 3vw, 2.5rem);
+        font-weight: 700;
+        margin-bottom: 0.55rem;
+    }
+
+    .hobby-form-header .subhead {
+        color: #5b6f88;
+        max-width: 62ch;
+        margin: 0 auto;
+        font-family: 'Manrope', sans-serif;
+    }
+
+    .hobby-form-steps {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.55rem;
+    }
+
+    .hobby-form-steps span {
+        border-radius: 999px;
+        background: #eef3fb;
+        color: #375172;
+        padding: 0.3rem 0.72rem;
+        font-size: 0.8rem;
+        font-weight: 700;
+        font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .hobby-form-grid {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .form-section {
+        border: 1px solid #d7e0ec;
+        border-radius: 16px;
+        padding: 1rem 1rem 1.1rem;
+        background: linear-gradient(180deg, #fcfdff 0%, #f7faff 100%);
+    }
+
+    .section-title {
+        font-size: 1.12rem;
+        margin-bottom: 0.85rem;
+        font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .section-note {
+        color: #607189;
+        margin-bottom: 0.9rem;
+    }
+
+    .form-meta-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-top: 0.25rem;
+    }
+
     input[type='text'], input[type='number'], textarea, select, input[type='datetime-local'] {
         display: block;
         width: 100%;
-        padding: .375rem .75rem;
+        padding: 0.58rem 0.75rem;
         font-size: 1rem;
-        font-weight: 400;
+        font-weight: 500;
         line-height: 1.5;
-        color: #212529;
+        color: #1d2f45;
         background-color: #fff;
         background-clip: padding-box;
-        border: 1px solid #ced4da;
-        border-radius: .25rem;
+        border: 1px solid #c6d2e2;
+        border-radius: 0.65rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
-    textarea { min-height: 120px; }
+
+    input[type='text']:focus, input[type='number']:focus, textarea:focus, select:focus, input[type='datetime-local']:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.18);
+        outline: none;
+    }
+
+    label {
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 600;
+        margin-bottom: 0.35rem;
+        color: #21344e;
+    }
+
+    textarea {
+        min-height: 150px;
+    }
+
+    .hobby-submit-btn {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.18rem;
+        letter-spacing: 0.01em;
+    }
+
+    .image-preview-wrap {
+        max-width: 280px;
+        border: 1px solid #c6d2e2;
+        border-radius: 12px;
+        padding: 0.35rem;
+        background: #fff;
+    }
+
+    .image-preview-wrap img {
+        width: 100%;
+        height: 170px;
+        object-fit: cover;
+        border-radius: 9px;
+        display: block;
+    }
+
+    .requirements-list .input-group .form-control {
+        border-right: 0;
+    }
+
+    .requirements-list .input-group-text {
+        border: 1px solid #c6d2e2;
+        border-left: 0;
+        background: #f9fbff;
+    }
+
     .tagify {
         width: 100%;
-        border: 1px solid #ced4da;
+        border: 1px solid #c6d2e2;
+        border-radius: 0.65rem;
+    }
+
+    @media (max-width: 767px) {
+        .hobby-form-card .card-body {
+            padding: 1rem;
+        }
+
+        .form-section {
+            padding: 0.8rem;
+        }
+
+        .hobby-form-header {
+            margin-bottom: 1.2rem;
+        }
     }
 </style>
 <script src="{% static 'js/canada_locations.js' %}?v=3"></script>
@@ -272,19 +519,30 @@ document.addEventListener("DOMContentLoaded", function() {
 document.addEventListener('DOMContentLoaded', () => {
     const provInput = document.getElementById('{{ form.province.id_for_label }}');
     const cityInput = document.getElementById('{{ form.city.id_for_label }}');
+    const neighInput = document.getElementById('{{ form.neighbourhood.id_for_label }}');
+    const initialProvince = (provInput && provInput.value) ? provInput.value : '';
+    const initialCity = (cityInput && cityInput.value) ? cityInput.value : '';
+    const initialNeighbourhood = (neighInput && neighInput.value) ? neighInput.value : '';
     // Convert plain text inputs to selects for province and city
     function upgradeToSelect(inputEl, placeholder){
         const sel = document.createElement('select');
         sel.name = inputEl.name;
         sel.className = 'form-select';
         sel.id = inputEl.id;
+        if (inputEl.value) sel.setAttribute('data-initial', inputEl.value);
         inputEl.replaceWith(sel);
         return sel;
     }
     const provinceSelect = upgradeToSelect(provInput, 'Province');
     const citySelect = upgradeToSelect(cityInput, 'City');
-    const neighInput = document.getElementById('{{ form.neighbourhood.id_for_label }}');
-    populateLocationSelectors(provinceSelect, citySelect, neighInput, provinceSelect.getAttribute('data-initial'), citySelect.getAttribute('data-initial'));
+    populateLocationSelectors(
+        provinceSelect,
+        citySelect,
+        neighInput,
+        initialProvince,
+        initialCity,
+        initialNeighbourhood
+    );
 });
 </script>
 {% endblock %}

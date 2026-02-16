@@ -1,100 +1,691 @@
 {
-  "QC": { "name": "Quebec", "cities": {
-    "Montreal": ["Downtown", "Plateau", "Griffintown", "NDG", "Ville-Marie"],
-    "Quebec City": ["Old Quebec", "Montcalm", "Saint-Roch", "Sainte-Foy"],
-    "Laval": ["Chomedey", "Sainte-Dorothee", "Laval-des-Rapides"],
-    "Gatineau": ["Hull", "Aylmer"],
-    "Longueuil": ["Vieux-Longueuil", "Greenfield Park"],
-    "Sherbrooke": ["Lennoxville"],
-    "Saguenay": ["Chicoutimi", "Jonquiere"],
-    "Trois-Rivieres": ["Cap-de-la-Madeleine"],
-    "Terrebonne": ["Lachenaie"],
-    "Levis": ["Desjardins"]
-  }},
-  "ON": { "name": "Ontario", "cities": {
-    "Toronto": ["Downtown", "North York", "Scarborough", "Etobicoke"],
-    "Ottawa": ["Centretown", "Kanata", "Orleans"],
-    "Mississauga": ["Square One", "Port Credit", "Streetsville"],
-    "Brampton": ["Downtown", "Bramalea"],
-    "Hamilton": ["Downtown", "Dundas", "Stoney Creek"],
-    "London": ["Downtown", "Masonville"],
-    "Markham": ["Unionville"],
-    "Vaughan": ["Maple", "Concord"],
-    "Kitchener": ["Downtown"],
-    "Waterloo": ["Uptown"],
-    "Windsor": ["Downtown"],
-    "Richmond Hill": ["Hillcrest"],
-    "Oakville": ["Kerr Village"],
-    "Burlington": ["Downtown"],
-    "Oshawa": ["Downtown"],
-    "St. Catharines": ["Downtown"],
-    "Barrie": ["Downtown"],
-    "Guelph": ["Downtown"],
-    "Kingston": ["Downtown"],
-    "Sudbury": ["Downtown"]
-  }},
-  "AB": { "name": "Alberta", "cities": {
-    "Calgary": ["Downtown", "Beltline", "Kensington"],
-    "Edmonton": ["Downtown", "Strathcona", "Westmount"],
-    "Red Deer": ["Downtown"],
-    "Lethbridge": ["Downtown"],
-    "St. Albert": ["Downtown"],
-    "Medicine Hat": ["Southlands"],
-    "Grande Prairie": ["Avondale"],
-    "Fort McMurray": ["Downtown"]
-  }},
-  "BC": { "name": "British Columbia", "cities": {
-    "Vancouver": ["Downtown", "Kitsilano", "Mount Pleasant"],
-    "Surrey": ["Guildford", "Newton", "Whalley"],
-    "Burnaby": ["Metrotown", "Brentwood"],
-    "Richmond": ["City Centre", "Steveston"],
-    "Abbotsford": ["Clearbrook"],
-    "Coquitlam": ["Town Centre"],
-    "Kelowna": ["Downtown"],
-    "Victoria": ["Downtown", "Fernwood", "James Bay"],
-    "Nanaimo": ["Downtown"],
-    "Kamloops": ["Sahali", "North Shore"],
-    "Langley": ["City Centre"],
-    "Delta": ["Ladner", "Tsawwassen"]
-  }},
-  "MB": { "name": "Manitoba", "cities": {
-    "Winnipeg": ["Downtown", "St. Boniface", "Fort Garry"],
-    "Brandon": ["Downtown"],
-    "Steinbach": ["Downtown"],
-    "Thompson": ["Downtown"],
-    "Portage la Prairie": ["Downtown"]
-  }},
-  "SK": { "name": "Saskatchewan", "cities": {
-    "Saskatoon": ["Riversdale", "Nutana", "Stonebridge"],
-    "Regina": ["Downtown", "Cathedral", "Harbour Landing"],
-    "Prince Albert": ["Downtown"],
-    "Moose Jaw": ["Downtown"],
-    "Swift Current": ["Downtown"]
-  }},
-  "NS": { "name": "Nova Scotia", "cities": {
-    "Halifax": ["Downtown", "North End", "South End"],
-    "Sydney": ["Downtown"],
-    "Dartmouth": ["Downtown"],
-    "Truro": ["Downtown"]
-  }},
-  "NB": { "name": "New Brunswick", "cities": {
-    "Moncton": ["Downtown"],
-    "Fredericton": ["Downtown"],
-    "Saint John": ["Uptown"],
-    "Dieppe": ["Downtown"],
-    "Miramichi": ["Newcastle"]
-  }},
-  "NL": { "name": "Newfoundland and Labrador", "cities": {
-    "St. John's": ["Downtown", "Quidi Vidi"],
-    "Mount Pearl": ["Downtown"],
-    "Corner Brook": ["Downtown"],
-    "Gander": ["Downtown"]
-  }},
-  "PE": { "name": "Prince Edward Island", "cities": {
-    "Charlottetown": ["Downtown"],
-    "Summerside": ["Downtown"]
-  }},
-  "YT": { "name": "Yukon", "cities": { "Whitehorse": ["Downtown"] }},
-  "NT": { "name": "Northwest Territories", "cities": { "Yellowknife": ["Downtown"] }},
-  "NU": { "name": "Nunavut", "cities": { "Iqaluit": ["Downtown"] }}
+  "QC": {
+    "name": "Quebec",
+    "cities": {
+      "Montreal": [
+        "Downtown",
+        "Plateau",
+        "Griffintown",
+        "NDG",
+        "Ville-Marie",
+        "City Centre"
+      ],
+      "Quebec City": [
+        "Old Quebec",
+        "Montcalm",
+        "Saint-Roch",
+        "Sainte-Foy",
+        "Downtown",
+        "City Centre"
+      ],
+      "Laval": [
+        "Chomedey",
+        "Sainte-Dorothee",
+        "Laval-des-Rapides",
+        "Downtown",
+        "City Centre",
+        "Old Town"
+      ],
+      "Gatineau": [
+        "Hull",
+        "Aylmer",
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End"
+      ],
+      "Longueuil": [
+        "Vieux-Longueuil",
+        "Greenfield Park",
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End"
+      ],
+      "Sherbrooke": [
+        "Lennoxville",
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End"
+      ],
+      "Saguenay": [
+        "Chicoutimi",
+        "Jonquiere",
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End"
+      ],
+      "Trois-Rivieres": [
+        "Cap-de-la-Madeleine",
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End"
+      ],
+      "Terrebonne": [
+        "Lachenaie",
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End"
+      ],
+      "Levis": [
+        "Desjardins",
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End"
+      ]
+    }
+  },
+  "ON": {
+    "name": "Ontario",
+    "cities": {
+      "Toronto": [
+        "Downtown",
+        "North York",
+        "Scarborough",
+        "Etobicoke",
+        "City Centre",
+        "Old Town"
+      ],
+      "Ottawa": [
+        "Centretown",
+        "Kanata",
+        "Orleans",
+        "Downtown",
+        "City Centre",
+        "Old Town"
+      ],
+      "Mississauga": [
+        "Square One",
+        "Port Credit",
+        "Streetsville",
+        "Downtown",
+        "City Centre",
+        "Old Town"
+      ],
+      "Brampton": [
+        "Downtown",
+        "Bramalea",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End"
+      ],
+      "Hamilton": [
+        "Downtown",
+        "Dundas",
+        "Stoney Creek",
+        "City Centre",
+        "Old Town",
+        "North End"
+      ],
+      "London": [
+        "Downtown",
+        "Masonville",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End"
+      ],
+      "Markham": [
+        "Unionville",
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End"
+      ],
+      "Vaughan": [
+        "Maple",
+        "Concord",
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End"
+      ],
+      "Kitchener": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Waterloo": [
+        "Uptown",
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End"
+      ],
+      "Windsor": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Richmond Hill": [
+        "Hillcrest",
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End"
+      ],
+      "Oakville": [
+        "Kerr Village",
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End"
+      ],
+      "Burlington": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Oshawa": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "St. Catharines": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Barrie": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Guelph": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Kingston": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Sudbury": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ]
+    }
+  },
+  "AB": {
+    "name": "Alberta",
+    "cities": {
+      "Calgary": [
+        "Downtown",
+        "Beltline",
+        "Kensington",
+        "City Centre",
+        "Old Town",
+        "North End"
+      ],
+      "Edmonton": [
+        "Downtown",
+        "Strathcona",
+        "Westmount",
+        "City Centre",
+        "Old Town",
+        "North End"
+      ],
+      "Red Deer": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Lethbridge": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "St. Albert": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Medicine Hat": [
+        "Southlands",
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End"
+      ],
+      "Grande Prairie": [
+        "Avondale",
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End"
+      ],
+      "Fort McMurray": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ]
+    }
+  },
+  "BC": {
+    "name": "British Columbia",
+    "cities": {
+      "Vancouver": [
+        "Downtown",
+        "Kitsilano",
+        "Mount Pleasant",
+        "City Centre",
+        "Old Town",
+        "North End"
+      ],
+      "Surrey": [
+        "Guildford",
+        "Newton",
+        "Whalley",
+        "Downtown",
+        "City Centre",
+        "Old Town"
+      ],
+      "Burnaby": [
+        "Metrotown",
+        "Brentwood",
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End"
+      ],
+      "Richmond": [
+        "City Centre",
+        "Steveston",
+        "Downtown",
+        "Old Town",
+        "North End",
+        "South End"
+      ],
+      "Abbotsford": [
+        "Clearbrook",
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End"
+      ],
+      "Coquitlam": [
+        "Town Centre",
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End"
+      ],
+      "Kelowna": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Victoria": [
+        "Downtown",
+        "Fernwood",
+        "James Bay",
+        "City Centre",
+        "Old Town",
+        "North End"
+      ],
+      "Nanaimo": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Kamloops": [
+        "Sahali",
+        "North Shore",
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End"
+      ],
+      "Langley": [
+        "City Centre",
+        "Downtown",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Delta": [
+        "Ladner",
+        "Tsawwassen",
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End"
+      ]
+    }
+  },
+  "MB": {
+    "name": "Manitoba",
+    "cities": {
+      "Winnipeg": [
+        "Downtown",
+        "St. Boniface",
+        "Fort Garry",
+        "City Centre",
+        "Old Town",
+        "North End"
+      ],
+      "Brandon": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Steinbach": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Thompson": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Portage la Prairie": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ]
+    }
+  },
+  "SK": {
+    "name": "Saskatchewan",
+    "cities": {
+      "Saskatoon": [
+        "Riversdale",
+        "Nutana",
+        "Stonebridge",
+        "Downtown",
+        "City Centre",
+        "Old Town"
+      ],
+      "Regina": [
+        "Downtown",
+        "Cathedral",
+        "Harbour Landing",
+        "City Centre",
+        "Old Town",
+        "North End"
+      ],
+      "Prince Albert": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Moose Jaw": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Swift Current": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ]
+    }
+  },
+  "NS": {
+    "name": "Nova Scotia",
+    "cities": {
+      "Halifax": [
+        "Downtown",
+        "North End",
+        "South End",
+        "City Centre",
+        "Old Town",
+        "East End"
+      ],
+      "Sydney": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Dartmouth": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Truro": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ]
+    }
+  },
+  "NB": {
+    "name": "New Brunswick",
+    "cities": {
+      "Moncton": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Fredericton": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Saint John": [
+        "Uptown",
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End"
+      ],
+      "Dieppe": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Miramichi": [
+        "Newcastle",
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End"
+      ]
+    }
+  },
+  "NL": {
+    "name": "Newfoundland and Labrador",
+    "cities": {
+      "St. John's": [
+        "Downtown",
+        "Quidi Vidi",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End"
+      ],
+      "Mount Pearl": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Corner Brook": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Gander": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ]
+    }
+  },
+  "PE": {
+    "name": "Prince Edward Island",
+    "cities": {
+      "Charlottetown": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ],
+      "Summerside": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ]
+    }
+  },
+  "YT": {
+    "name": "Yukon",
+    "cities": {
+      "Whitehorse": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ]
+    }
+  },
+  "NT": {
+    "name": "Northwest Territories",
+    "cities": {
+      "Yellowknife": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ]
+    }
+  },
+  "NU": {
+    "name": "Nunavut",
+    "cities": {
+      "Iqaluit": [
+        "Downtown",
+        "City Centre",
+        "Old Town",
+        "North End",
+        "South End",
+        "East End"
+      ]
+    }
+  }
 }

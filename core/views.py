@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Hobby, Category, Application, Profile, Rating, ParticipantRating, Tag, Requirement, Supplier, SupplierItem, HobbyImage
-from .forms import HobbyForm, ProfileForm, SupplierUserCreationForm
+from .forms import HobbyForm, ProfileForm, SupplierUserCreationForm, SupplierProfileForm, SupplierItemForm
 from django.conf import settings
 from django.db.models import Count
 from django.utils import timezone
@@ -17,8 +17,18 @@ from types import SimpleNamespace
 from django.db.models import Q
 import logging
 from django.core.files.base import ContentFile
+from datetime import timedelta
 
 logger = logging.getLogger(__name__)
+
+
+def _expire_stale_supplier_requests():
+    now = timezone.now()
+    Requirement.objects.filter(
+        supplier_status='pending',
+        request_expires_at__isnull=False,
+        request_expires_at__lt=now,
+    ).update(supplier_status='expired')
 
 def _parse_tagify_value(value):
     """
@@ -514,7 +524,27 @@ def signup(request):
                 user = form.save()
                 # Safe even if a post_save signal already created the profile
                 Profile.objects.get_or_create(user=user)
+                if form.cleaned_data.get('account_type') == 'supplier':
+                    Supplier.objects.get_or_create(
+                        user=user,
+                        defaults={
+                            'business_name': form.cleaned_data.get('business_name', '').strip(),
+                            'contact_email': form.cleaned_data.get('email', '').strip(),
+                            'phone_number': form.cleaned_data.get('phone_number', '').strip(),
+                            'website': form.cleaned_data.get('website', '').strip(),
+                            'address_line1': form.cleaned_data.get('address_line1', '').strip(),
+                            'address_line2': form.cleaned_data.get('address_line2', '').strip(),
+                            'postal_code': form.cleaned_data.get('postal_code', '').strip(),
+                            'province': form.cleaned_data.get('province', '').strip(),
+                            'city': form.cleaned_data.get('city', '').strip(),
+                            'neighbourhood': form.cleaned_data.get('neighbourhood', '').strip(),
+                            'bio': form.cleaned_data.get('supplier_bio', '').strip(),
+                        }
+                    )
             login(request, user)
+            if form.cleaned_data.get('account_type') == 'supplier':
+                messages.success(request, 'Supplier account created. Complete your profile and inventory below.')
+                return redirect('supplier_dashboard')
             return redirect('home')
     else:
         form = SupplierUserCreationForm()
@@ -614,10 +644,13 @@ def supplier_dashboard(request):
     """Dashboard for suppliers to manage inventory."""
     if not hasattr(request.user, 'supplier'):
         return redirect('home')
+    _expire_stale_supplier_requests()
     supplier = request.user.supplier
     items = supplier.items.select_related('category','tag').all().order_by('-created_at')
     categories = Category.objects.all()
     tags = Tag.objects.all()
+    profile_form = SupplierProfileForm(instance=supplier)
+    item_form = SupplierItemForm()
     pending_requests = Requirement.objects.select_related('hobby','supplier_item').filter(
         supplier_item__supplier=supplier, supplier_status='pending'
     ).order_by('-supplier_requested_at')
@@ -625,30 +658,54 @@ def supplier_dashboard(request):
         supplier_item__supplier=supplier, supplier_status='accepted'
     ).order_by('-supplier_requested_at')[:10]
     if request.method == 'POST':
-        name = (request.POST.get('name') or '').strip()
-        category_id = request.POST.get('category')
-        tag_id = request.POST.get('tag')
-        quantity = int(request.POST.get('quantity') or 1)
-        is_rental = request.POST.get('is_rental') == 'on'
-        price = request.POST.get('price') or '0'
-        image = request.FILES.get('image')
-        if name:
-            SupplierItem.objects.create(
-                supplier=supplier,
-                name=name,
-                category_id=category_id or None,
-                tag_id=tag_id or None,
-                quantity=quantity,
-                is_rental=is_rental,
-                price=price,
-                image=image
-            )
+        action = (request.POST.get('action') or '').strip()
+        if action == 'save_profile':
+            profile_form = SupplierProfileForm(request.POST, instance=supplier)
+            if profile_form.is_valid():
+                profile_form.save()
+                messages.success(request, 'Supplier profile updated.')
+                return redirect('supplier_dashboard')
+        elif action == 'add_item':
+            item_form = SupplierItemForm(request.POST, request.FILES)
+            if item_form.is_valid():
+                item = item_form.save(commit=False)
+                item.supplier = supplier
+                item.save()
+                messages.success(request, 'Item added to inventory.')
+                return redirect('supplier_dashboard')
+        else:
+            # Backward compatible path for old forms that do not send action.
+            name = (request.POST.get('name') or '').strip()
+            category_id = request.POST.get('category')
+            tag_id = request.POST.get('tag')
+            quantity = int(request.POST.get('quantity') or 1)
+            is_rental = request.POST.get('is_rental') == 'on'
+            price = request.POST.get('price') or '0'
+            image = request.FILES.get('image')
+            condition = (request.POST.get('condition') or SupplierItem.Condition.GOOD).strip()
+            description = (request.POST.get('description') or '').strip()
+            if name:
+                SupplierItem.objects.create(
+                    supplier=supplier,
+                    name=name,
+                    description=description,
+                    category_id=category_id or None,
+                    tag_id=tag_id or None,
+                    quantity=quantity,
+                    is_rental=is_rental,
+                    price=price,
+                    condition=condition if condition in SupplierItem.Condition.values else SupplierItem.Condition.GOOD,
+                    image=image
+                )
+                messages.success(request, 'Item added to inventory.')
             return redirect('supplier_dashboard')
     return render(request, 'supplier_dashboard.html', {
         'supplier': supplier,
         'items': items,
         'categories': categories,
         'tags': tags,
+        'profile_form': profile_form,
+        'item_form': item_form,
         'pending_requests': pending_requests,
         'recent_accepted': recent_accepted,
     })
@@ -667,28 +724,60 @@ def supplier_item_suggestions(request):
     category_name = (request.GET.get('category') or '').strip()
     tag_names = [t.strip() for t in (request.GET.get('tags') or '').split(',') if t.strip()]
 
-    qs = SupplierItem.objects.select_related('supplier__user','category','tag','supplier')
-    if province: qs = qs.filter(supplier__province__iexact=province)
-    if city: qs = qs.filter(supplier__city__iexact=city)
-    if neighbourhood: qs = qs.filter(supplier__neighbourhood__iexact=neighbourhood)
+    _expire_stale_supplier_requests()
+    base_qs = SupplierItem.objects.select_related('supplier__user','category','tag','supplier').filter(
+        quantity__gt=0,
+        supplier__active=True
+    )
+    qs = base_qs
+    if province:
+        qs = qs.filter(supplier__province__iexact=province)
+    if city:
+        qs = qs.filter(supplier__city__iexact=city)
+    if neighbourhood:
+        qs = qs.filter(supplier__neighbourhood__iexact=neighbourhood)
     if category_name:
         cat_obj = Category.objects.filter(name__iexact=category_name).first()
         if cat_obj:
-            qs = qs.filter(Q(category=cat_obj) | Q(tag__isnull=False))  # allow any tag, refined below
+            qs = qs.filter(category=cat_obj)
     if tag_names:
-        existing_tags = Tag.objects.filter(name__in=tag_names)
-        qs = qs.filter(Q(tag__in=existing_tags) | Q(category__name__iexact=category_name))
-    qs = qs.filter(quantity__gt=0, supplier__active=True)[:25]
+        tag_q = Q()
+        for tag_name in tag_names:
+            tag_q |= Q(name__iexact=tag_name)
+        existing_tags = Tag.objects.filter(tag_q)
+        if existing_tags.exists():
+            qs = qs.filter(tag__in=existing_tags)
+
+    # Graceful fallback when strict local match has no results.
+    if not qs.exists():
+        qs = base_qs
+        if province:
+            qs = qs.filter(supplier__province__iexact=province)
+        if category_name:
+            cat_obj = Category.objects.filter(name__iexact=category_name).first()
+            if cat_obj:
+                qs = qs.filter(category=cat_obj)
+        if tag_names:
+            tag_q = Q()
+            for tag_name in tag_names:
+                tag_q |= Q(name__iexact=tag_name)
+            existing_tags = Tag.objects.filter(tag_q)
+            if existing_tags.exists():
+                qs = qs.filter(tag__in=existing_tags)
+
+    qs = qs[:25]
     data = [
         {
             'id': item.id,
             'name': item.name,
+            'description': item.description,
             'is_rental': item.is_rental,
             'price': str(item.price),
             'quantity': item.quantity,
+            'condition': item.get_condition_display(),
             'category': item.category.name if item.category else None,
             'tag': item.tag.name if item.tag else None,
-            'supplier': item.supplier.user.username,
+            'supplier': item.supplier.business_name or item.supplier.user.username,
         } for item in qs
     ]
     return JsonResponse(data, safe=False)
@@ -757,15 +846,24 @@ def delete_requirement(request, req_id):
 @login_required
 @require_POST
 def supplier_decide_requirement(request, req_id, decision):
+    _expire_stale_supplier_requests()
     req = get_object_or_404(Requirement, id=req_id, supplier_item__supplier__user=request.user)
     if decision not in ['accepted','declined']:
         return HttpResponseForbidden('Invalid decision')
+    if req.supplier_status != 'pending':
+        messages.error(request, 'This request is no longer pending.')
+        return redirect('supplier_dashboard')
     if decision == 'accepted' and req.supplier_status != 'accepted':
         item = req.supplier_item
         if item and item.quantity > 0:
             item.quantity -= 1
             item.save()
+        elif item and item.quantity == 0:
+            messages.error(request, 'Cannot accept: item is out of stock.')
+            return redirect('supplier_dashboard')
     req.supplier_status = decision
+    req.supplier_response_note = (request.POST.get('response_note') or '').strip()
+    req.supplier_decided_at = timezone.now()
     req.save()
     messages.success(request, f'Request {decision}.')
     return redirect('supplier_dashboard')
@@ -799,7 +897,11 @@ def host_link_supplier_item(request, req_id):
     from django.utils import timezone as tz
     req.supplier_item = item
     req.supplier_status = 'pending'
+    req.host_request_note = (request.POST.get('host_request_note') or '').strip()
+    req.supplier_response_note = ''
+    req.supplier_decided_at = None
     req.supplier_requested_at = tz.now()
+    req.request_expires_at = tz.now() + timedelta(hours=72)
     req.save()
     messages.success(request, f'Request sent to supplier {item.supplier.user.username}.')
     return redirect('hobby_detail', hobby_id=req.hobby_id)

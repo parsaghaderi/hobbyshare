@@ -36,7 +36,7 @@ function ensureCanadaLocations() {
   return _locationsPromise;
 }
 
-function populateLocationSelectors(provinceSel, citySel, neighbourhoodInput, initialProvince, initialCity) {
+function populateLocationSelectors(provinceSel, citySel, neighbourhoodInput, initialProvince, initialCity, initialNeighbourhood) {
   function renderSelectors() {
     if(!window.CANADA_LOCATIONS || Object.keys(window.CANADA_LOCATIONS).length === 0) return;
     provinceSel.innerHTML = '<option value="">Province</option>';
@@ -48,10 +48,46 @@ function populateLocationSelectors(provinceSel, citySel, neighbourhoodInput, ini
       provinceSel.appendChild(opt);
     });
 
+    let neighbourhoodDatalist = null;
+    function ensureNeighbourhoodDatalist() {
+      if (!neighbourhoodInput) return null;
+      if (!neighbourhoodDatalist) {
+        neighbourhoodDatalist = document.createElement('datalist');
+        neighbourhoodDatalist.id = `${neighbourhoodInput.id}-suggestions`;
+        neighbourhoodInput.setAttribute('list', neighbourhoodDatalist.id);
+        neighbourhoodInput.insertAdjacentElement('afterend', neighbourhoodDatalist);
+      }
+      return neighbourhoodDatalist;
+    }
+
+    function refreshNeighbourhoods() {
+      if (!neighbourhoodInput) return;
+      const selectedProvName = provinceSel.value;
+      const selectedCityName = citySel.value;
+      const dl = ensureNeighbourhoodDatalist();
+      if (!dl) return;
+      dl.innerHTML = '';
+      neighbourhoodInput.placeholder = selectedCityName ? 'Neighbourhood (optional)' : 'Neighbourhood';
+      if (!selectedProvName || !selectedCityName) return;
+      const provEntry = Object.values(CANADA_LOCATIONS).find(p => p.name === selectedProvName);
+      if (!provEntry) return;
+      const neighbourhoods = provEntry.cities[selectedCityName] || [];
+      neighbourhoods.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        dl.appendChild(opt);
+      });
+      if (initialNeighbourhood) {
+        neighbourhoodInput.value = initialNeighbourhood;
+        initialNeighbourhood = null;
+      }
+    }
+
     function refreshCities() {
       const selectedProvName = provinceSel.value;
       citySel.innerHTML = '<option value="">City</option>';
       neighbourhoodInput && (neighbourhoodInput.placeholder = 'Neighbourhood');
+      if (neighbourhoodInput && !initialNeighbourhood) neighbourhoodInput.value = '';
       if(!selectedProvName) return;
       const provEntry = Object.values(CANADA_LOCATIONS).find(p => p.name === selectedProvName);
       if(!provEntry) return;
@@ -64,8 +100,18 @@ function populateLocationSelectors(provinceSel, citySel, neighbourhoodInput, ini
       });
     }
 
-    provinceSel.addEventListener('change', () => { initialCity = null; refreshCities(); });
+    provinceSel.addEventListener('change', () => {
+      initialCity = null;
+      initialNeighbourhood = null;
+      refreshCities();
+      refreshNeighbourhoods();
+    });
+    citySel.addEventListener('change', () => {
+      initialNeighbourhood = null;
+      refreshNeighbourhoods();
+    });
     refreshCities();
+    refreshNeighbourhoods();
   }
 
   // Load from API, then render.

@@ -40,7 +40,7 @@
             </select>
         </div>
         <div class="col-md-2">
-            <input type="text" name="neighbourhood" class="form-control" placeholder="Neighbourhood" value="{{ request.GET.neighbourhood }}">
+            <input type="text" name="neighbourhood" id="neighbourhood-input" class="form-control" placeholder="Neighbourhood" value="{{ request.GET.neighbourhood }}">
         </div>
         <div class="col-12 text-end">
             <button type="submit" class="btn btn-primary">Search</button>
@@ -110,13 +110,21 @@
   pointer-events:none;border-radius:0 0 .5rem .5rem;
 }
 </style>
-<script src="{% static 'js/canada_locations.js' %}?v=3"></script>
+<script src="{% static 'js/canada_locations.js' %}?v=4"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const provSel = document.getElementById('province-select');
   const citySel = document.getElementById('city-select');
+  const neighbourhoodInput = document.getElementById('neighbourhood-input');
   if (typeof populateLocationSelectors === 'function') {
-    populateLocationSelectors(provSel, citySel, null, '{{ province_selected|default:"" }}', '{{ city_selected|default:"" }}');
+    populateLocationSelectors(
+      provSel,
+      citySel,
+      neighbourhoodInput,
+      '{{ province_selected|default:""|escapejs }}',
+      '{{ city_selected|default:""|escapejs }}',
+      '{{ request.GET.neighbourhood|default:""|escapejs }}'
+    );
   }
 });
 </script>

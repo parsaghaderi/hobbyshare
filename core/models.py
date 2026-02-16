@@ -135,8 +135,21 @@ class Requirement(models.Model):
     tag = models.ForeignKey('Tag', on_delete=models.SET_NULL, null=True, blank=True, related_name='requirements')
     # Supplier linkage
     supplier_item = models.ForeignKey('SupplierItem', on_delete=models.SET_NULL, null=True, blank=True, related_name='requirements')
-    supplier_status = models.CharField(max_length=10, choices=[('pending','Pending'),('accepted','Accepted'),('declined','Declined')], default='pending')
+    supplier_status = models.CharField(
+        max_length=10,
+        choices=[
+            ('pending', 'Pending'),
+            ('accepted', 'Accepted'),
+            ('declined', 'Declined'),
+            ('expired', 'Expired'),
+        ],
+        default='pending',
+    )
     supplier_requested_at = models.DateTimeField(null=True, blank=True)
+    request_expires_at = models.DateTimeField(null=True, blank=True)
+    host_request_note = models.TextField(blank=True)
+    supplier_response_note = models.TextField(blank=True)
+    supplier_decided_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         hobby_title = self.hobby.title if self.hobby else 'No hobby'
@@ -195,9 +208,17 @@ def supplier_item_image_upload(instance, filename):
 
 class Supplier(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='supplier')
+    business_name = models.CharField(max_length=200, blank=True)
+    contact_email = models.EmailField(blank=True)
+    phone_number = models.CharField(max_length=50, blank=True)
+    website = models.URLField(blank=True)
+    address_line1 = models.CharField(max_length=200, blank=True)
+    address_line2 = models.CharField(max_length=200, blank=True)
+    postal_code = models.CharField(max_length=20, blank=True)
     province = models.CharField(max_length=100, blank=True)
     city = models.CharField(max_length=100, blank=True)
     neighbourhood = models.CharField(max_length=150, blank=True)
+    bio = models.TextField(blank=True)
     active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -205,13 +226,21 @@ class Supplier(models.Model):
         return f'Supplier {self.user.username}'
 
 class SupplierItem(models.Model):
+    class Condition(models.TextChoices):
+        NEW = 'NEW', 'New'
+        LIKE_NEW = 'LIKE_NEW', 'Like New'
+        GOOD = 'GOOD', 'Good'
+        FAIR = 'FAIR', 'Fair'
+
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, related_name='items')
     name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='supplier_items')
     tag = models.ForeignKey(Tag, on_delete=models.SET_NULL, null=True, blank=True, related_name='supplier_items')
     quantity = models.PositiveIntegerField(default=1)
     is_rental = models.BooleanField(default=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    condition = models.CharField(max_length=20, choices=Condition.choices, default=Condition.GOOD)
     image = models.ImageField(upload_to=supplier_item_image_upload, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

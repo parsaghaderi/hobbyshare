@@ -152,6 +152,17 @@
                       <span class="badge bg-success ms-1">Supplier confirmed</span>
                     {% elif req.supplier_status == 'declined' %}
                       <span class="badge bg-danger ms-1">Declined</span>
+                    {% elif req.supplier_status == 'expired' %}
+                      <span class="badge bg-secondary ms-1">Expired</span>
+                    {% endif %}
+                    {% if req.request_expires_at and req.supplier_status == 'pending' %}
+                      <small class="text-muted ms-1">(expires {{ req.request_expires_at|date:"M j, g:i A" }})</small>
+                    {% endif %}
+                    {% if req.host_request_note %}
+                      <div class="small text-muted mt-1"><strong>Host note:</strong> {{ req.host_request_note }}</div>
+                    {% endif %}
+                    {% if req.supplier_response_note %}
+                      <div class="small text-muted mt-1"><strong>Supplier note:</strong> {{ req.supplier_response_note }}</div>
                     {% endif %}
                   {% endif %}
                   {% if req.provided_by %}
@@ -181,9 +192,10 @@
                     <select name="supplier_item_id" class="form-select form-select-sm">
                       <option value="">Supplier item...</option>
                       {% for it in supplier_items %}
-                        <option value="{{ it.id }}">{{ it.name }} ({{ it.supplier.user.username }})</option>
+                        <option value="{{ it.id }}">{{ it.name }} ({{ it.supplier.business_name|default:it.supplier.user.username }})</option>
                       {% endfor %}
                     </select>
+                    <input type="text" name="host_request_note" class="form-control form-control-sm ms-1" placeholder="Note (optional)">
                     <button class="btn btn-sm btn-outline-success ms-1">Request</button>
                   </form>
                   {% endif %}
@@ -299,6 +311,17 @@
                             <span class="badge bg-success ms-1">Supplier confirmed</span>
                           {% elif req.supplier_status == 'declined' %}
                             <span class="badge bg-danger ms-1">Declined</span>
+                          {% elif req.supplier_status == 'expired' %}
+                            <span class="badge bg-secondary ms-1">Expired</span>
+                          {% endif %}
+                          {% if req.request_expires_at and req.supplier_status == 'pending' %}
+                            <small class="text-muted ms-1">(expires {{ req.request_expires_at|date:"M j, g:i A" }})</small>
+                          {% endif %}
+                          {% if req.host_request_note %}
+                            <div class="small text-muted mt-1"><strong>Host note:</strong> {{ req.host_request_note }}</div>
+                          {% endif %}
+                          {% if req.supplier_response_note %}
+                            <div class="small text-muted mt-1"><strong>Supplier note:</strong> {{ req.supplier_response_note }}</div>
                           {% endif %}
                         {% endif %}
                         {% if req.provided_by %}
@@ -323,9 +346,10 @@
                             <select name="supplier_item_id" class="form-select form-select-sm">
                               <option value="">Supplier item...</option>
                               {% for it in supplier_items %}
-                                <option value="{{ it.id }}">{{ it.name }} ({{ it.supplier.user.username }})</option>
+                                <option value="{{ it.id }}">{{ it.name }} ({{ it.supplier.business_name|default:it.supplier.user.username }})</option>
                               {% endfor %}
                             </select>
+                            <input type="text" name="host_request_note" class="form-control form-control-sm ms-1" placeholder="Note (optional)">
                             <button class="btn btn-sm btn-outline-success ms-1">Request</button>
                           </form>
                           {% endif %}

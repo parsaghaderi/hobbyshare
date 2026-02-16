@@ -100,10 +100,16 @@
     })();
     </script>
     <script>
-    // PWA service worker registration
+    // Disable old service-worker caches to prevent stale HTML/UI.
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('{% static 'js/service-worker.js' %}').catch(console.error);
+            navigator.serviceWorker.getRegistrations()
+                .then(regs => Promise.all(regs.map(r => r.unregister())))
+                .then(() => (window.caches ? caches.keys() : Promise.resolve([])))
+                .then(keys => Promise.all((keys || []).map(k => caches.delete(k))))
+                .catch(console.error);
+
+            navigator.serviceWorker.register('{% static 'js/service-worker.js' %}?v=5').catch(console.error);
         });
     }
     </script>

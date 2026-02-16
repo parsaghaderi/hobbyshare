@@ -2,61 +2,137 @@
 {% load static %}
 {% block content %}
 <h2>Supplier Dashboard</h2>
-<p class="text-muted">Manage your inventory items and requirement requests.</p>
+<p class="text-muted">Manage your business profile, inventory, and incoming requirement requests.</p>
+
+<div class="alert alert-warning py-2">
+  <strong>Marketplace notice:</strong> Share A Hobby only connects hosts and suppliers.
+  Payments, shipping, delivery, pickup, and returns are handled offline between users.
+</div>
+
 {% if pending_requests %}
   <div class="alert alert-info"><strong>{{ pending_requests|length }}</strong> pending requirement request{{ pending_requests|length|pluralize }}.</div>
 {% endif %}
-<div class="row">
-  <div class="col-md-5">
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card mb-4">
+      <div class="card-header">Supplier Profile</div>
+      <div class="card-body">
+        <form method="post" class="vstack gap-2">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="save_profile">
+          <div class="mb-2">
+            <label class="form-label">Business name</label>
+            {{ profile_form.business_name }}
+          </div>
+          <div class="row g-2">
+            <div class="col">
+              <label class="form-label">Contact email</label>
+              {{ profile_form.contact_email }}
+            </div>
+            <div class="col">
+              <label class="form-label">Phone</label>
+              {{ profile_form.phone_number }}
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Website</label>
+            {{ profile_form.website }}
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Address line 1</label>
+            {{ profile_form.address_line1 }}
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Address line 2</label>
+            {{ profile_form.address_line2 }}
+          </div>
+          <div class="row g-2">
+            <div class="col">
+              <label class="form-label">Postal code</label>
+              {{ profile_form.postal_code }}
+            </div>
+            <div class="col">
+              <label class="form-label">Province</label>
+              {{ profile_form.province }}
+            </div>
+          </div>
+          <div class="row g-2">
+            <div class="col">
+              <label class="form-label">City</label>
+              {{ profile_form.city }}
+            </div>
+            <div class="col">
+              <label class="form-label">Neighbourhood</label>
+              {{ profile_form.neighbourhood }}
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Short bio</label>
+            {{ profile_form.bio }}
+          </div>
+          <div class="form-check mb-2">
+            {{ profile_form.active }}
+            <label for="{{ profile_form.active.id_for_label }}" class="form-check-label">Visible to hosts</label>
+          </div>
+          <button class="btn btn-outline-primary w-100" type="submit">Save Profile</button>
+        </form>
+      </div>
+    </div>
+
     <div class="card mb-4">
       <div class="card-header">Add Item</div>
       <div class="card-body">
         <form method="post" enctype="multipart/form-data">
           {% csrf_token %}
+          <input type="hidden" name="action" value="add_item">
           <div class="mb-2">
             <label class="form-label">Name</label>
-            <input type="text" name="name" class="form-control" required>
+            {{ item_form.name }}
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Description</label>
+            {{ item_form.description }}
           </div>
           <div class="row g-2 mb-2">
             <div class="col">
               <label class="form-label">Category</label>
-              <select name="category" class="form-select">
-                <option value="">--</option>
-                {% for c in categories %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
-              </select>
+              {{ item_form.category }}
             </div>
             <div class="col">
               <label class="form-label">Tag</label>
-              <select name="tag" class="form-select">
-                <option value="">--</option>
-                {% for t in tags %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}
-              </select>
+              {{ item_form.tag }}
             </div>
           </div>
           <div class="row g-2 mb-2">
             <div class="col">
+              <label class="form-label">Condition</label>
+              {{ item_form.condition }}
+            </div>
+            <div class="col">
               <label class="form-label">Quantity</label>
-              <input type="number" min="1" name="quantity" value="1" class="form-control">
+              {{ item_form.quantity }}
             </div>
             <div class="col">
               <label class="form-label">Price</label>
-              <input type="number" min="0" step="0.01" name="price" value="0" class="form-control">
+              {{ item_form.price }}
             </div>
           </div>
           <div class="form-check mb-2">
-            <input class="form-check-input" type="checkbox" name="is_rental" id="id_is_rental" checked>
-            <label for="id_is_rental" class="form-check-label">Rental Item?</label>
+            {{ item_form.is_rental }}
+            <label for="{{ item_form.is_rental.id_for_label }}" class="form-check-label">Rental item (unchecked means For Sale)</label>
           </div>
           <div class="mb-3">
             <label class="form-label">Image</label>
-            <input type="file" name="image" accept="image/*" class="form-control">
+            {{ item_form.image }}
           </div>
           <button class="btn btn-primary w-100" type="submit">Add Item</button>
         </form>
       </div>
     </div>
   </div>
-  <div class="col-md-7">
+
+  <div class="col-lg-7">
     <div class="card mb-4">
       <div class="card-header">Inventory ({{ items|length }})</div>
       <ul class="list-group list-group-flush">
@@ -73,13 +149,19 @@
             <div class="flex-grow-1">
               <strong>{{ item.name }}</strong>
               <div class="text-muted" style="font-size:0.8rem;">
-                {% if item.category %}{{ item.category.name }}{% endif %}{% if item.tag %} • {{ item.tag.name }}{% endif %} • Qty {{ item.quantity }} • {{ item.is_rental|yesno:"Rental,For Sale" }} • ${{ item.price }}
+                {% if item.category %}{{ item.category.name }}{% endif %}{% if item.tag %} • {{ item.tag.name }}{% endif %}
+                • Qty {{ item.quantity }}
+                • {{ item.is_rental|yesno:"Rental,For Sale" }}
+                • {{ item.get_condition_display }}
+                • ${{ item.price }}
               </div>
+              {% if item.description %}<div class="small text-muted">{{ item.description|truncatechars:120 }}</div>{% endif %}
             </div>
           </li>
         {% endfor %}
       </ul>
     </div>
+
     <div class="card mb-4">
       <div class="card-header d-flex justify-content-between align-items-center">
         <span>Pending Requests</span>
@@ -90,26 +172,28 @@
         {% for req in pending_requests %}
           <li class="list-group-item">
             <div class="d-flex justify-content-between align-items-start">
-              <div>
-                <strong>{{ req.name }}</strong> <span class="text-muted" style="font-size:0.8rem;">for <a href="{% url 'hobby_detail' req.hobby.id %}">{{ req.hobby.title }}</a></span><br>
+              <div class="me-3">
+                <strong>{{ req.name }}</strong>
+                <span class="text-muted" style="font-size:0.8rem;">for <a href="{% url 'hobby_detail' req.hobby.id %}">{{ req.hobby.title }}</a></span><br>
                 <span class="badge bg-warning text-dark">Awaiting decision</span>
                 {% if req.supplier_requested_at %}<span class="text-muted" style="font-size:0.7rem;">requested {{ req.supplier_requested_at|timesince }} ago</span>{% endif %}
+                {% if req.request_expires_at %}<span class="text-muted" style="font-size:0.7rem;"> • expires {{ req.request_expires_at|date:"M j, g:i A" }}</span>{% endif %}
+                {% if req.host_request_note %}<div class="small mt-1"><strong>Host note:</strong> {{ req.host_request_note }}</div>{% endif %}
               </div>
-              <div class="ms-2 d-flex gap-2">
-                <form method="post" action="{% url 'supplier_decide_requirement' req.id 'accepted' %}">
-                  {% csrf_token %}
-                  <button class="btn btn-sm btn-success">Accept</button>
-                </form>
-                <form method="post" action="{% url 'supplier_decide_requirement' req.id 'declined' %}">
-                  {% csrf_token %}
-                  <button class="btn btn-sm btn-outline-danger">Decline</button>
-                </form>
-              </div>
+              <form method="post" class="ms-2" style="min-width:220px;">
+                {% csrf_token %}
+                <input type="text" name="response_note" class="form-control form-control-sm mb-2" placeholder="Optional response note">
+                <div class="d-flex gap-2 justify-content-end">
+                  <button class="btn btn-sm btn-success" formaction="{% url 'supplier_decide_requirement' req.id 'accepted' %}">Accept</button>
+                  <button class="btn btn-sm btn-outline-danger" formaction="{% url 'supplier_decide_requirement' req.id 'declined' %}">Decline</button>
+                </div>
+              </form>
             </div>
           </li>
         {% endfor %}
       </ul>
     </div>
+
     <div class="card">
       <div class="card-header">Recently Accepted</div>
       <ul class="list-group list-group-flush">
@@ -118,6 +202,9 @@
           <li class="list-group-item">
             <strong>{{ req.name }}</strong> for <a href="{% url 'hobby_detail' req.hobby.id %}">{{ req.hobby.title }}</a>
             <span class="badge bg-success ms-2">Accepted</span>
+            {% if req.supplier_response_note %}
+              <div class="small text-muted mt-1"><strong>Your note:</strong> {{ req.supplier_response_note }}</div>
+            {% endif %}
           </li>
         {% endfor %}
       </ul>
